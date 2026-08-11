@@ -6,7 +6,7 @@
 * Người 4 : Nguyễn Đặng Xuân Phát 
 * Người 5 : Phạm Trần Đức Phú 
 * Người 6 : Phạm Ngọc Phú 
-## Công nghệ sử dụng : 
+## Ngôn ngữ sử dụng : 
 * Python
 ### KẾ HOẠCH PHÂN BỐ NHÂN SỰ DỰ ÁN
 UDM_10 — Upload nhiều file
