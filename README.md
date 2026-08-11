@@ -8,7 +8,7 @@
 * Người 6 : Phạm Ngọc Phú 
 ## Công nghệ sử dụng : 
 * Python
-###KẾ HOẠCH PHÂN BỐ NHÂN SỰ DỰ ÁN
+### KẾ HOẠCH PHÂN BỐ NHÂN SỰ DỰ ÁN
 UDM_10 — Upload nhiều file
 1. Thông tin dự án
 Project Code: UDM_10
