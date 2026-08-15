@@ -1,0 +1,95 @@
+<mxfile host="Electron">
+  <diagram name="UDM_10 Client Server" id="0">
+    <mxGraphModel dx="1548" dy="1032" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" parent="1" style="text;html=1;align=center;fontSize=22;fontStyle=1" value="SƠ ĐỒ KIẾN TRÚC CLIENT – SERVER&lt;br&gt;Ứng dụng kéo thả và upload nhiều file lên Server (UDM_10)" vertex="1">
+          <mxGeometry height="70" width="800" x="400" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=18;fontStyle=1;verticalAlign=top;spacingTop=12" value="CLIENT&lt;br&gt;Python + Tkinter" vertex="1">
+          <mxGeometry height="610" width="500" x="50" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;dashed=1;fontSize=15;align=center" value="KÉO &amp; THẢ / CHỌN FILE&lt;br&gt;&lt;br&gt;Kéo một hoặc nhiều file vào đây&lt;br&gt;hoặc click để chọn file" vertex="1">
+          <mxGeometry height="120" width="430" x="85" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="l" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=13;align=left;spacing=10" value="DANH SÁCH FILE&lt;br&gt;&lt;br&gt;Tên file        Kích thước      Trạng thái      Tiến trình&lt;br&gt;report.pdf      2.45 MB         Chờ                  0%&lt;br&gt;image.jpg       1.32 MB         Đang tải           45%&lt;br&gt;data.xlsx       0.98 MB         Hoàn tất           100%&lt;br&gt;video.zip       5.60 MB         Lỗi" vertex="1">
+          <mxGeometry height="220" width="430" x="85" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="u" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=16;fontStyle=1" value="UPLOAD" vertex="1">
+          <mxGeometry height="55" width="130" x="235" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="s" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=18;fontStyle=1;verticalAlign=top;spacingTop=12" value="SERVER&lt;br&gt;Python + Flask" vertex="1">
+          <mxGeometry height="610" width="500" x="1050" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="a" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=15;align=center" value="POST /api/upload&lt;br&gt;&lt;br&gt;(multipart/form-data)" vertex="1">
+          <mxGeometry height="100" width="280" x="1160" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="r" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" value="NHẬN FILE" vertex="1">
+          <mxGeometry height="70" width="100" x="1080" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="k" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" value="KIỂM TRA&lt;br&gt;FILE" vertex="1">
+          <mxGeometry height="70" width="100" x="1200" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="x" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" value="XỬ LÝ&lt;br&gt;TRÙNG TÊN" vertex="1">
+          <mxGeometry height="70" width="100" x="1320" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="9HrqDHUKe91yII68CwN2-2" edge="1" parent="1" source="sv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" value="LƯU FILE" vertex="1">
+          <mxGeometry height="70" width="90" x="1440" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="q" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=13;align=center" value="HÀNG ĐỢI / GIỚI HẠN ĐỒNG THỜI&lt;br&gt;&lt;br&gt;Queue (tối đa N file) → Worker 1 → Worker 2 → … → Worker N" vertex="1">
+          <mxGeometry height="80" width="450" x="1080" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="st" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=14;align=center" value="THƯ MỤC LƯU TRỮ&lt;br&gt;&lt;br&gt;/uploads/&lt;br&gt;file1   file2   …   fileN" vertex="1">
+          <mxGeometry height="80" width="450" x="1080" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="n" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=15;fontStyle=1" value="INTERNET / MẠNG NỘI BỘ" vertex="1">
+          <mxGeometry height="90" width="280" x="660" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="d" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="l">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="l" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="u">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="u" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2;fontSize=13;fontStyle=1" target="n" value="HTTP POST&lt;br&gt;/api/upload&lt;br&gt;multipart/form-data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2;fontSize=13" target="a" value="HTTP">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="425" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="a" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="r">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="r" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="k">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="k" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="x">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="x" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeWidth=2" target="sv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="resp" edge="1" parent="1" source="a" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=1;strokeWidth=2;fontSize=13" target="n" value="JSON Response&lt;br&gt;trạng thái từng file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=14;fontStyle=1;align=center" value="LUỒNG CHÍNH&lt;br&gt;Kéo thả / Chọn file → File List → Upload → HTTP POST /api/upload → Flask Server → Xử lý → /uploads/" vertex="1">
+          <mxGeometry height="120" width="880" x="340" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="9HrqDHUKe91yII68CwN2-3" edge="1" parent="1" source="q" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;innerLoopWaypoints=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9HrqDHUKe91yII68CwN2-4" edge="1" parent="1" source="q" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.655;entryY=0.092;entryDx=0;entryDy=0;entryPerimeter=0;" target="st">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
