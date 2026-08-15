@@ -1,0 +1,5 @@
+{
+  "base_url": "",
+  "upload_endpoint": "/api/uploads",
+  "allow_mock_fallback": true
+}
