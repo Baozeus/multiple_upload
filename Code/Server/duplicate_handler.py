@@ -21,5 +21,5 @@ def reserve_file_path(save_dir: str, filename: str):
     with _file_lock:
         final_name = resolve_filename(save_dir, filename)
         final_path = os.path.join(save_dir, final_name)
-        file_handle = open(final_path, "wb")  # mở ngay để giữ chỗ tên này
+        file_handle = open(final_path, "wb") 
     return final_name, file_handle

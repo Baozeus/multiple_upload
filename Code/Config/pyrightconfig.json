@@ -1,0 +1,6 @@
+{
+  "include": ["*.py"],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none",
+  "pythonVersion": "3.10"
+}

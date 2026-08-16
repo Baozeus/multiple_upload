@@ -1,38 +1,11 @@
-# Python virtual environments
+# Python virtual environment
 .venv/
-venv/
-env/
 
 # Python cache
 __pycache__/
-*.py[cod]
+**/__pycache__/
+*.pyc
 
 # Uploaded files
 uploads/
-
-# Environment variables and secrets
-.env
-.env.*
-!.env.example
-
-# Private keys
-*.pem
-*.key
-*.p12
-*.pfx
-
-# Build files
-build/
-dist/
-*.egg-info/
-
-# IDE
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+**/uploads/
