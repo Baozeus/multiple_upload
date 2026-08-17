@@ -4,8 +4,9 @@ import threading
 import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
-from Code.Shared.protocol import (
+from protocol import (
     CHUNK_SIZE,
     DEFAULT_PORT,
     DEFAULT_TIMEOUT,
@@ -84,7 +85,7 @@ def upload_file(path, host, port, on_update):
 
 class App:
     def __init__(self):
-        self.root = tk.Tk()
+        self.root = TkinterDnD.Tk()
         self.root.title("File Upload Client")
         self.root.geometry("850x550")
 
@@ -123,6 +124,12 @@ class App:
             bg="#f5f5f5",
         )
         self.drop.pack(fill="x")
+
+        self.drop.drop_target_register(DND_FILES)
+        self.drop.dnd_bind("<<Drop>>", self.on_drop)
+
+        self.drop.dnd_bind("<<DragEnter>>", self.on_drag_enter)
+        self.drop.dnd_bind("<<DragLeave>>", self.on_drag_leave)
 
         btns = ttk.Frame(mid)
         btns.pack(fill="x", pady=6)
@@ -180,6 +187,28 @@ class App:
         t.daemon = True
         t.start()
 
+    def on_drag_enter(self, event):
+        self.drop.config()
+        return event.action
+
+
+    def on_drag_leave(self, event):
+        self.drop.config(
+            text="Kéo và thả file vào đây\nhoặc bấm nút bên dưới để chọn nhiều file",
+            bg="#f5f5f5",
+        )
+
+
+    def on_drop(self, event):
+        self.drop.config(
+            text="Kéo và thả file vào đây\nhoặc bấm nút bên dưới để chọn nhiều file",
+            bg="#f5f5f5",
+        )
+        paths = self.root.tk.splitlist(event.data)
+
+        if paths:
+            self.add_files(paths)
+    
     def chon_file(self):
         paths = filedialog.askopenfilenames()
         if paths:
