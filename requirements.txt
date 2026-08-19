@@ -1,1 +1,0 @@
-# Không cần thư viện ngoài (chỉ dùng Python stdlib: socket, threading, tkinter , tkinterdnd2)
