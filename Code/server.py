@@ -11,9 +11,12 @@ from protocol import (
     recv_exact,
     recv_json,
     send_json,
-    unique_path,
     validate_upload_header,
 )
+from upload_handler import save_incoming_file
+
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
 
 class FileUploadServer:
@@ -54,12 +57,13 @@ class FileUploadServer:
                 self.sock.close()
 
     def handle_client(self, conn, addr):
-        temp_path = None
         peer = "{}:{}".format(addr[0], addr[1])
         print("[SERVER] Connected: " + peer)
 
         try:
             conn.settimeout(DEFAULT_TIMEOUT)
+            
+    
             try:
                 header = recv_json(conn)
             except Exception as e:
@@ -73,35 +77,40 @@ class FileUploadServer:
                 print("[SERVER] Tu choi {}: {}".format(peer, e))
                 return
 
-            final_path = unique_path(self.upload_dir, filename)
-            saved_name = os.path.basename(final_path)
-            temp_path = final_path + ".part"
-
-            send_json(conn, {"status": "OK", "saved_as": saved_name})
-            print("[SERVER] Nhan '{}' ({} byte) -> {}".format(
-                filename, filesize, saved_name
-            ))
-            received = 0
-            out = open(temp_path, "wb")
-            try:
+            
+            send_json(conn, {"status": "OK", "saved_as": filename})
+            print("[SERVER] Nhan '{}' ({} byte)".format(filename, filesize))
+            
+            
+            def data_stream():
+                received = 0
                 while received < filesize:
                     to_read = min(CHUNK_SIZE, filesize - received)
                     chunk = recv_exact(conn, to_read)
-                    out.write(chunk)
-                    received += len(chunk)
-            finally:
-                out.close()
-            os.replace(temp_path, final_path)
-            temp_path = None
-
-            send_json(conn, {
-                "status": "SUCCESS",
-                "saved_as": saved_name,
-                "bytes": received,
-            })
-            print("[SERVER] OK {}: luu {} ({} byte)".format(
-                peer, saved_name, received
-            ))
+                    if chunk:
+                        received += len(chunk)
+                        yield chunk
+                    else:
+                        break
+            
+            
+            try:
+                result = save_incoming_file(self.upload_dir, filename, data_stream())
+                
+                
+                send_json(conn, {
+                    "status": "SUCCESS",
+                    "saved_as": result["final_name"],
+                    "bytes": result["bytes_written"],
+                })
+                print("[SERVER] OK {}: luu {} ({} byte)".format(
+                    peer, result["final_name"], result["bytes_written"]
+                ))
+                
+            except Exception as e:
+                print("[SERVER] ERROR {}: {}".format(peer, e))
+                traceback.print_exc()
+                send_json(conn, {"status": "ERROR", "message": str(e)})
 
         except Exception as e:
             print("[SERVER] ERROR {}: {}".format(peer, e))
@@ -110,12 +119,7 @@ class FileUploadServer:
                 send_json(conn, {"status": "ERROR", "message": str(e)})
             except Exception:
                 pass
-            if temp_path and os.path.exists(temp_path):
-                try:
-                    os.remove(temp_path)
-                    print("[SERVER] Da xoa file tam: " + temp_path)
-                except OSError:
-                    pass
+
         finally:
             try:
                 conn.shutdown(socket.SHUT_RDWR)
@@ -129,7 +133,7 @@ def main():
     parser = argparse.ArgumentParser(description="File upload server")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
-    parser.add_argument("--dir", default="uploads")
+    parser.add_argument("--dir", default=UPLOAD_DIR)
     args = parser.parse_args()
 
     if args.port < 1 or args.port > 65535:
