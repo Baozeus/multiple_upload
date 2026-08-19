@@ -70,20 +70,6 @@ def validate_upload_header(header):
     return filename, filesize
 
 
-def unique_path(directory, filename):
-    """Nếu file.txt đã có -> file_1.txt, file_2.txt, ..."""
-    path = os.path.join(directory, filename)
-    if not os.path.exists(path):
-        return path
-    stem, ext = os.path.splitext(filename)
-    n = 1
-    while True:
-        path = os.path.join(directory, stem + "_" + str(n) + ext)
-        if not os.path.exists(path):
-            return path
-        n += 1
-
-
 def format_size(num_bytes):
     """Đổi byte sang KB/MB để hiển thị."""
     value = float(num_bytes)
