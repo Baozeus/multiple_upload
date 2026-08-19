@@ -15,6 +15,7 @@ from protocol import (
     recv_json,
     send_json,
 )
+from codelogic import QuanlyUpload
 
 MAX_WORKERS = 3  
 
@@ -93,8 +94,9 @@ class App:
         self.port_var = tk.StringVar(value=str(DEFAULT_PORT))
         self.status_var = tk.StringVar(value="Chưa kết nối")
 
-        self.files = []  
-        self.busy = 0    
+        # Sử dụng QuanlyUpload để quản lý hàng đợi
+        self.upload_manager = QuanlyUpload(so_file_toi_da=MAX_WORKERS)
+        self.file_infos = []  # Lưu thông tin các file để cập nhật GUI
         self.lock = threading.Lock()
 
         self.build_ui()
@@ -188,16 +190,14 @@ class App:
         t.start()
 
     def on_drag_enter(self, event):
-        self.drop.config()
+        self.drop.config(bg="#e0f0ff")
         return event.action
-
 
     def on_drag_leave(self, event):
         self.drop.config(
             text="Kéo và thả file vào đây\nhoặc bấm nút bên dưới để chọn nhiều file",
             bg="#f5f5f5",
         )
-
 
     def on_drop(self, event):
         self.drop.config(
@@ -215,6 +215,14 @@ class App:
             self.add_files(paths)
 
     def add_files(self, paths):
+        """Thêm file vào danh sách và hàng đợi"""
+        host = self.host_var.get().strip()
+        try:
+            port = int(self.port_var.get().strip())
+        except ValueError:
+            messagebox.showerror("Loi", "Port không hợp lệ")
+            return
+
         for path in paths:
             path = os.path.normpath(path)
             if not os.path.isfile(path):
@@ -227,6 +235,8 @@ class App:
                 "state": "PENDING",
                 "row": None,
             }
+            
+            # Thêm vào Treeview
             row = self.tree.insert(
                 "",
                 "end",
@@ -239,11 +249,16 @@ class App:
                 ),
             )
             info["row"] = row
-            self.files.append(info)
+            self.file_infos.append(info)
+            
+            # Thêm vào hàng đợi của QuanlyUpload
+            self.upload_manager.add_file(info)
 
-        self.start_next()
+        # Bắt đầu xử lý upload
+        self.start_uploads(host, port)
 
     def update_row(self, info, state, percent, speed, message):
+        """Cập nhật dòng trong Treeview"""
         info["state"] = state
         name = info["name"]
         if state == "COMPLETED" and message and message != name:
@@ -267,27 +282,23 @@ class App:
             ),
         )
 
-    def start_next(self):
-        """Lấy file PENDING, cấp thread nếu còn slot."""
-        host = self.host_var.get().strip()
-        try:
-            port = int(self.port_var.get().strip())
-        except ValueError:
-            return
-
+    def start_uploads(self, host, port):
+        """Khởi động upload cho các file đang chờ trong hàng đợi"""
         self.lock.acquire()
         try:
-            while self.busy < MAX_WORKERS:
-                info = None
-                for f in self.files:
-                    if f["state"] == "PENDING":
-                        info = f
-                        break
-                if info is None:
-                    break
-
+            # Xử lý file từ queue nếu còn slot
+            while (len(self.upload_manager.uploading) < self.upload_manager.so_file_toi_da 
+                   and len(self.upload_manager.queue) > 0):
+                
+                # Lấy file từ queue
+                info = self.upload_manager.queue.popleft()
+                self.upload_manager.uploading.append(info)
+                
+                # Cập nhật trạng thái
                 info["state"] = "UPLOADING"
-                self.busy += 1
+                self.update_row(info, "UPLOADING", 0, 0, "")
+                
+                # Tạo thread upload
                 t = threading.Thread(target=self.worker, args=(info, host, port))
                 t.daemon = True
                 t.start()
@@ -295,21 +306,28 @@ class App:
             self.lock.release()
 
     def worker(self, info, host, port):
+        """Worker thread upload một file"""
         def on_update(state, percent, speed, message):
             def do_update(s=state, p=percent, sp=speed, m=message):
                 self.update_row(info, s, p, sp, m)
-
+                # Cập nhật trạng thái trong QuanlyUpload
+                if s == "COMPLETED":
+                    if info in self.upload_manager.uploading:
+                        self.upload_manager.uploading.remove(info)
+                    self.upload_manager.completed.append(info)
+                elif s == "ERROR":
+                    if info in self.upload_manager.uploading:
+                        self.upload_manager.uploading.remove(info)
+                    self.upload_manager.failed.append(info)
+                    
+                # Xử lý tiếp file trong queue sau khi hoàn thành
+                if s in ["COMPLETED", "ERROR"]:
+                    self.root.after(0, lambda: self.start_uploads(host, port))
+                    
             self.root.after(0, do_update)
 
+        # Thực hiện upload
         upload_file(info["path"], host, port, on_update)
-
-        self.lock.acquire()
-        try:
-            self.busy -= 1
-        finally:
-            self.lock.release()
-
-        self.root.after(0, self.start_next)
 
     def run(self):
         self.root.mainloop()
