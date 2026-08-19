@@ -236,7 +236,7 @@ class App:
                 "row": None,
             }
             
-            # Thêm vào Treeview
+            
             row = self.tree.insert(
                 "",
                 "end",
@@ -251,10 +251,8 @@ class App:
             info["row"] = row
             self.file_infos.append(info)
             
-            # Thêm vào hàng đợi của QuanlyUpload
             self.upload_manager.add_file(info)
 
-        # Bắt đầu xử lý upload
         self.start_uploads(host, port)
 
     def update_row(self, info, state, percent, speed, message):
@@ -286,19 +284,19 @@ class App:
         """Khởi động upload cho các file đang chờ trong hàng đợi"""
         self.lock.acquire()
         try:
-            # Xử lý file từ queue nếu còn slot
+        
             while (len(self.upload_manager.uploading) < self.upload_manager.so_file_toi_da 
                    and len(self.upload_manager.queue) > 0):
                 
-                # Lấy file từ queue
+                
                 info = self.upload_manager.queue.popleft()
                 self.upload_manager.uploading.append(info)
                 
-                # Cập nhật trạng thái
+            
                 info["state"] = "UPLOADING"
                 self.update_row(info, "UPLOADING", 0, 0, "")
                 
-                # Tạo thread upload
+              
                 t = threading.Thread(target=self.worker, args=(info, host, port))
                 t.daemon = True
                 t.start()
@@ -310,7 +308,7 @@ class App:
         def on_update(state, percent, speed, message):
             def do_update(s=state, p=percent, sp=speed, m=message):
                 self.update_row(info, s, p, sp, m)
-                # Cập nhật trạng thái trong QuanlyUpload
+                
                 if s == "COMPLETED":
                     if info in self.upload_manager.uploading:
                         self.upload_manager.uploading.remove(info)
@@ -320,13 +318,13 @@ class App:
                         self.upload_manager.uploading.remove(info)
                     self.upload_manager.failed.append(info)
                     
-                # Xử lý tiếp file trong queue sau khi hoàn thành
+               
                 if s in ["COMPLETED", "ERROR"]:
                     self.root.after(0, lambda: self.start_uploads(host, port))
                     
             self.root.after(0, do_update)
 
-        # Thực hiện upload
+       
         upload_file(info["path"], host, port, on_update)
 
     def run(self):
