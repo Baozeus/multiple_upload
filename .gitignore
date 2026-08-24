@@ -1,11 +1,46 @@
-# Python virtual environment
-.venv/
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
 
-# Python cache
+# Python cache and tooling
 __pycache__/
-**/__pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.qa/
+.impeccable/
 
-# Uploaded files
-uploads/
-**/uploads/
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Runtime files
+uploads/*
+!uploads/.gitkeep
+logs/
+*.log
+database/history.json
+database/history.json.tmp
+database/*.db
+database/*.sqlite*
+database/dumps/
+database/backups/
+*.sql.gz
+*.dump
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

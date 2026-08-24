@@ -1,0 +1,20 @@
+{
+  "log_level": "INFO",
+  "log_dir": "logs",
+  "tcp": {
+    "bind_host": "127.0.0.1",
+    "client_host": "127.0.0.1",
+    "port": 9000,
+    "control_max_bytes": 1048576,
+    "socket_timeout_seconds": 15,
+    "file_chunk_bytes": 65536
+  },
+  "uploads": {
+    "directory": "uploads",
+    "max_concurrent": 3
+  },
+  "history": {
+    "backend": "json",
+    "json_path": "database/history.json"
+  }
+}

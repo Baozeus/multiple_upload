@@ -1,64 +1,86 @@
-# multiple_upload
-## Thành viên : 
-* Người 1 : Nguyễn Tấn Bão 
-* Người 2 : Nguyễn Phi Long 
-* Người 3 : Nguyễn Viết Thịnh 
-* Người 4 : Nguyễn Đặng Xuân Phát 
-* Người 5 : Phạm Trần Đức Phú 
-* Người 6 : Phạm Ngọc Phú 
-## Ngôn ngữ : 
-* Python
-### KẾ HOẠCH PHÂN BỐ NHÂN SỰ DỰ ÁN
-UDM_10 — Upload nhiều file
-1. Thông tin dự án
-Project Code: UDM_10
-Mô tả: Ứng dụng GUI cho phép kéo thả và upload nhiều file lên Server.
-Số thành viên thực hiện: 6
-2. Tóm tắt yêu cầu cốt lõi
--Kéo-thả một hoặc nhiều file vào khu vực upload trên GUI
-- Mỗi file có trạng thái riêng: chờ → đang tải → hoàn tất / lỗi
-- Hiển thị tốc độ và tiến trình (%) riêng cho từng file
-- Hỗ trợ hàng đợi hoặc upload đồng thời có giới hạn số file cùng lúc
-- Lỗi của một file không được làm dừng các file còn lại
-- Có quy tắc xử lý file trùng tên trên Server
-- Không bắt buộc Pause/Resume (tránh trùng phạm vi với UDM_12)
-#  Lộ trình dự án (4 Tuần)
+# UDM_10 — Multiple Upload
 
-### Tuần 1 — Phân tích & Thiết kế
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Vẽ sơ đồ kiến trúc hệ thống, thiết kế API, setup project skeleton |
-| **TV2** | Thiết kế state machine cho file, phác thảo UI progress bar |
-| **TV3** | Chọn công nghệ server, setup server rỗng, test nhận 1 file đơn giản |
-| **TV4** | Nghiên cứu cơ chế hàng đợi, viết pseudo-code |
-| **TV5** | Đề xuất quy tắc trùng tên |
-| **TV6** | Soạn checklist test case dựa trên 7 yêu cầu trong đề bài |
+Ứng dụng Python 3.11+ desktop client-server upload nhiều file. UI PySide6 dùng
+TCP adapter thật; queue FIFO thread-safe giới hạn `N` worker nền, cập nhật
+progress/tốc độ từng file về GUI bằng Qt signal. TCP server nhận binary theo
+chunk, lưu nguyên tử, hỗ trợ Unicode và trả kết quả riêng từng file.
 
-### Tuần 2 — Phát triển module riêng lẻ
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Code vùng kéo-thả hoạt động được, hỗ trợ chọn nhiều file cùng lúc |
-| **TV2** | Code progress bar + hiển thị % và tốc độ cho từng dòng file riêng biệt |
-| **TV3** | Hoàn thiện API nhận file thật, lưu đúng thư mục, trả JSON kết quả |
-| **TV4** | Code logic hàng đợi hoạt động: khi vượt giới hạn file cùng lúc thì file mới phải ở trạng thái "chờ" |
-| **TV5** | Code xử lý trùng tên trên server + đảm bảo lỗi của 1 file không làm dừng tiến trình các file khác |
-| **TV6** | Bắt đầu test từng module riêng lẻ khi các bạn hoàn thành, ghi log lỗi để báo lại |
+## Kiến trúc đã chốt
 
-### Tuần 3 — Tích hợp & Kiểm thử
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Ghép giao diện kéo-thả với module trạng thái (TV2) thành một luồng UI hoàn chỉnh |
-| **TV2** | Kết nối tiến trình thực tế từ server (TV3) để progress bar chạy đúng dữ liệu thật |
-| **TV3** | Phối hợp TV4, TV5 để server xử lý đúng: nhận đồng thời có giới hạn + xử lý trùng tên |
-| **TV4** | Test cơ chế hàng đợi với nhiều file thật |
-| **TV5** | Test tình huống lỗi: ngắt mạng giữa chừng, file trùng tên, file quá lớn — đảm bảo các file khác vẫn tiếp tục |
-| **TV6** | Chạy full test case theo checklist, lập bảng lỗi (bug list) gửi từng người sửa |
+- Desktop GUI: PySide6.
+- Transport chính: TCP.
+- Control message: JSON UTF-8 với length-prefix 4 byte, big-endian.
+- File payload: raw binary đúng số byte đã khai báo, chỉ gửi sau `upload.ready`.
+- Trùng tên: server trả `upload.conflict`; client luôn chờ người dùng chọn
+  `overwrite`, `rename` hoặc `skip`, không có policy mặc định.
+- Storage: stream theo chunk vào file `.part`, sau đó commit atomic.
+- Client queue: `MAX_CONCURRENT_UPLOADS`, mặc định cấu hình mẫu là 3.
+- Trạng thái: `waiting`, `uploading`, `completed`, `failed`, `skipped`.
+- History: MySQL 8.0+ khi `MYSQL_ENABLED=true`; JSON khi tắt.
+- History được sở hữu bởi server và đọc qua TCP trong worker riêng; khởi động
+  client tự tải lại dữ liệu bền vững mà không chặn GUI.
+- Source layout: `src/udm10`.
 
-### Tuần 4 — Hoàn thiện & Báo cáo
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **Tất cả** | Sửa lỗi theo bug list của TV6, tối ưu UI/UX |
-| **TV1** | Chốt bản demo cuối, kiểm tra kiến trúc tổng thể |
-| **TV6** | Viết báo cáo dự án + làm slide thuyết trình, tổng hợp đóng góp từng thành viên |
-| **Cả nhóm** | Diễn tập demo (kéo nhiều file, show từng trạng thái, show 1 file lỗi không ảnh hưởng file khác, show xử lý trùng tên) |
+`domain` và `protocol` không phụ thuộc PySide6 hoặc MySQL. Entry point chỉ gọi
+module bootstrap và không chứa business logic.
 
+## Thiết lập
+
+```powershell
+cd D:\UDM
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Không commit `.env`, mật khẩu MySQL, file upload, history runtime hoặc log.
+
+## Chạy
+
+```powershell
+python run_server.py
+python run_client.py
+```
+
+Server xử lý `health.check` và nhiều `upload.start` nối tiếp trên một connection.
+Chi tiết message, error code và conflict policy xem tại
+[`docs/tcp-protocol.md`](docs/tcp-protocol.md). Mỗi worker client dùng một TCP
+connection riêng để cô lập lỗi; số worker đồng thời luôn bị queue giới hạn bởi N.
+
+Thiết lập schema và tài khoản MySQL xem tại
+[`docs/mysql-setup.md`](docs/mysql-setup.md). Khi MySQL được bật nhưng không thể
+kết nối hoặc thiếu schema, server dừng trước khi bind cổng và trả mã lỗi `2`.
+
+## Kiểm tra
+
+```powershell
+$env:PYTHONPATH=(Resolve-Path 'src').Path
+$env:QT_QPA_PLATFORM='offscreen'
+python -m pytest tests\unit -q
+python -m pytest tests\integration -q
+python -m pytest tests\ui -q
+python -m compileall -q src run_client.py run_server.py
+```
+
+Regression cuối: **65 test + 12 subtests đạt**. TC-01..TC-32 đạt; TC-33
+Pause/Resume là N/A theo phạm vi. Xem
+[`docs/test-report.md`](docs/test-report.md).
+
+## Tài liệu bàn giao
+
+- [Kiến trúc](docs/architecture.md)
+- [TCP protocol](docs/tcp-protocol.md)
+- [Thiết lập MySQL](docs/mysql-setup.md)
+- [Hướng dẫn người dùng](docs/user-guide.md)
+- [Kết quả kiểm thử](docs/test-report.md)
+- [Phân công và đóng góp](docs/team-contribution.md)
+
+## Cấu hình còn chờ xác nhận
+
+- `MAX_FILE_SIZE_MB`
+- `ALLOWED_EXTENSIONS`
+- Tên/vai trò TV1–TV6 giữa PDF và DOCX.
+
+Không push `.env`, upload thật, JSON history, log, cache, virtual environment,
+dump database, `.qa` hoặc `.impeccable`.
