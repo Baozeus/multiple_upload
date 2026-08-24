@@ -10,7 +10,7 @@ python Code\server.py --host 127.0.0.1 --port 9000
 python ui-handoff\client\run.py
 ```
 
-Xem cấu hình và cơ chế tương thích tại `ui-handoff/client/README.md`. Báo cáo bản preview nằm tại `docs/UI_INTEGRATION_REPORT.md`.
+Xem cấu hình và cơ chế tương thích tại `ui-handoff/client/README.md`.
 
 ## Thành viên : 
 * Người 1 : Nguyễn Tấn Bão 
