@@ -1,23 +1,5 @@
 # multiple_upload
 
-## Chạy bản Client giao diện mới
-
-Client PySide6 trong `Code/ui-handoff/client` dùng TCP mặc định và kết nối trực tiếp với `Code/server.py`. HTTP Adapter vẫn được giữ để tương thích cấu hình cũ.
-
-```powershell
-python -m pip install -r Code\ui-handoff\client\requirements.txt
-python Code\server.py --host 127.0.0.1 --port 9000
-python Code\ui-handoff\client\run.py
-```
-
-Xem cấu hình và cơ chế tương thích tại `Code/ui-handoff/client/README.md`.
-
-Chạy kiểm thử từ thư mục gốc repository:
-
-```powershell
-python -B -m unittest discover -s Code\tests -v
-```
-
 ## Thành viên : 
 * Người 1 : Nguyễn Tấn Bão 
 * Người 2 : Nguyễn Phi Long 
