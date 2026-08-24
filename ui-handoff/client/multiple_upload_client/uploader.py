@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import partial
 from datetime import datetime
+import threading
 import time
 
 from PySide6.QtCore import QFile, QIODevice, QObject, QTimer, QUrl, QUrlQuery, Signal
@@ -18,6 +19,7 @@ from PySide6.QtNetwork import (
 from .config import ClientConfig
 from .models import UploadItem, UploadStatus
 from .queue_manager import UploadQueue
+from .tcp_transport import TcpUploadAdapter, TcpUploadResult
 
 
 class UploadCoordinator(QObject):
@@ -29,31 +31,54 @@ class UploadCoordinator(QObject):
     mode_changed = Signal(str)
     notification = Signal(str)
     item_terminal = Signal(object, str)
+    tcp_progress = Signal(str, int, float)
+    tcp_finished = Signal(str, object)
+    tcp_failed = Signal(str, str)
 
     def __init__(self, config: ClientConfig, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.config = config
-        self.queue = UploadQueue()
+        self.queue = UploadQueue(config.max_concurrent)
         self.network = QNetworkAccessManager(self)
+        self.tcp = TcpUploadAdapter(config.tcp_host, config.tcp_port)
         self._network_replies: dict[str, QNetworkReply] = {}
         self._mock_timers: dict[str, QTimer] = {}
         self._progress_samples: dict[str, tuple[float, int]] = {}
+        self._tcp_active: set[str] = set()
+        self.default_conflict_policy = config.conflict_policy
 
-        if config.upload_url:
-            self.mode_changed.emit(f"API: {config.base_url}")
-        else:
-            self.mode_changed.emit("Chế độ mô phỏng")
+        self.tcp_progress.connect(self._on_tcp_progress)
+        self.tcp_finished.connect(self._on_tcp_finished)
+        self.tcp_failed.connect(self._on_tcp_failed)
+
+        self.mode_changed.emit(config.mode_label)
 
     def add_files(self, paths: list[str]) -> None:
         added = self.queue.add_paths(paths)
         for item in added:
+            item.conflict_policy = self.default_conflict_policy
             self.item_added.emit(item.id)
         if added:
             self.notification.emit(f"Đã thêm {len(added)} tệp vào danh sách.")
         elif paths:
-            self.notification.emit("Không có tệp hợp lệ mới được thêm.")
+            reason = self.queue.rejected[0][1] if self.queue.rejected else "Tệp không hợp lệ."
+            self.notification.emit(f"Không thể thêm tệp: {reason}")
+        if added and self.queue.rejected:
+            self.notification.emit(
+                f"Đã bỏ qua {len(self.queue.rejected)} tệp không hợp lệ. "
+                f"{self.queue.rejected[0][1]}"
+            )
         self.queue_changed.emit()
         self._pump_queue()
+
+    def set_conflict_policy(self, policy: str) -> None:
+        if policy not in {"rename", "overwrite", "skip"}:
+            return
+        self.default_conflict_policy = policy
+        for item in self.queue.items.values():
+            if item.status is UploadStatus.WAITING and not item.conflict_pending:
+                item.conflict_policy = policy
+                self.item_updated.emit(item.id)
 
     def get_item(self, item_id: str) -> UploadItem | None:
         return self.queue.items.get(item_id)
@@ -108,13 +133,85 @@ class UploadCoordinator(QObject):
     def _pump_queue(self) -> None:
         for item in self.queue.take_next():
             self.item_updated.emit(item.id)
-            if self.config.upload_url:
-                self._start_network_upload(item)
+            if self.config.transport == "tcp":
+                self._start_tcp_upload(item)
+            elif self.config.transport == "http":
+                if self.config.upload_url:
+                    self._start_http_upload(item)
+                else:
+                    self._mark_error(item, "HTTP Adapter chưa được cấu hình base_url.")
             else:
                 self._start_mock_upload(item)
         self.queue_changed.emit()
 
-    def _start_network_upload(self, item: UploadItem) -> None:
+    def _start_tcp_upload(self, item: UploadItem) -> None:
+        self._tcp_active.add(item.id)
+        item.detail = f"Đang gửi qua TCP đến {self.config.tcp_host}:{self.config.tcp_port}"
+        self.item_updated.emit(item.id)
+
+        worker = threading.Thread(
+            target=self._run_tcp_upload,
+            args=(item.id, item.path, item.conflict_policy or "rename"),
+            daemon=True,
+        )
+        worker.start()
+
+    def _run_tcp_upload(self, item_id: str, path, conflict: str) -> None:  # noqa: ANN001
+        try:
+            result = self.tcp.upload(
+                path,
+                conflict=conflict,
+                on_progress=lambda percent, speed: self.tcp_progress.emit(
+                    item_id, percent, speed
+                ),
+            )
+            self.tcp_finished.emit(item_id, result)
+        except Exception as error:
+            self.tcp_failed.emit(item_id, str(error))
+
+    def _on_tcp_progress(self, item_id: str, percent: int, speed: float) -> None:
+        item = self.get_item(item_id)
+        if item is None or item.status is not UploadStatus.UPLOADING:
+            return
+        item.progress = max(0, min(99, percent))
+        item.speed = self._format_speed(speed)
+        self.item_updated.emit(item_id)
+
+    def _on_tcp_finished(self, item_id: str, result: TcpUploadResult) -> None:
+        self._tcp_active.discard(item_id)
+        item = self.get_item(item_id)
+        if item is None:
+            self._pump_queue()
+            return
+
+        item.status = UploadStatus.COMPLETED
+        item.progress = 100
+        item.speed = "—"
+        item.finished_at = datetime.now().astimezone()
+        if result.status == "SKIPPED":
+            item.detail = "Đã bỏ qua vì tên tệp đã tồn tại"
+            item.conflict_result = "Bỏ qua"
+            terminal_status = "Bỏ qua"
+        else:
+            item.detail = f"Server đã lưu thành “{result.saved_as}”"
+            terminal_status = UploadStatus.COMPLETED.value
+        self.item_updated.emit(item.id)
+        self.item_terminal.emit(item, terminal_status)
+        self.mode_changed.emit(
+            f"TCP đang hoạt động — {self.config.tcp_host}:{self.config.tcp_port}"
+        )
+        self.queue_changed.emit()
+        self._pump_queue()
+
+    def _on_tcp_failed(self, item_id: str, message: str) -> None:
+        self._tcp_active.discard(item_id)
+        item = self.get_item(item_id)
+        if item is not None:
+            self._mark_error(item, message or "Upload TCP thất bại. Hãy thử lại.")
+        else:
+            self._pump_queue()
+
+    def _start_http_upload(self, item: UploadItem) -> None:
         source = QFile(str(item.path))
         if not source.open(QIODevice.OpenModeFlag.ReadOnly):
             self._mark_error(item, "Không thể đọc tệp hoặc không có quyền truy cập.")
@@ -184,7 +281,7 @@ class UploadCoordinator(QObject):
             item.finished_at = datetime.now().astimezone()
             self.item_updated.emit(item.id)
             self.item_terminal.emit(item, UploadStatus.COMPLETED.value)
-            self.mode_changed.emit(f"API đang hoạt động — {self.config.base_url}")
+            self.mode_changed.emit(f"HTTP đang hoạt động — {self.config.base_url}")
             item.conflict_policy = None
         elif status is not None and int(status) == 409:
             item.status = UploadStatus.WAITING

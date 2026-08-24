@@ -11,6 +11,7 @@ from protocol import (
     recv_exact,
     recv_json,
     send_json,
+    validate_conflict_policy,
     validate_upload_header,
 )
 from upload_handler import save_incoming_file
@@ -72,12 +73,24 @@ class FileUploadServer:
 
             try:
                 filename, filesize = validate_upload_header(header)
+                conflict = validate_conflict_policy(header)
             except ValueError as e:
                 send_json(conn, {"status": "ERROR", "message": str(e)})
                 print("[SERVER] Tu choi {}: {}".format(peer, e))
                 return
 
             
+            if conflict == "skip" and os.path.exists(
+                os.path.join(self.upload_dir, filename)
+            ):
+                send_json(conn, {
+                    "status": "SKIPPED",
+                    "saved_as": filename,
+                    "message": "Tệp đã tồn tại trên Server",
+                })
+                print("[SERVER] SKIP {}: {}".format(peer, filename))
+                return
+
             send_json(conn, {"status": "OK", "saved_as": filename})
             print("[SERVER] Nhan '{}' ({} byte)".format(filename, filesize))
             
@@ -95,7 +108,17 @@ class FileUploadServer:
             
             
             try:
-                result = save_incoming_file(self.upload_dir, filename, data_stream())
+                result = save_incoming_file(
+                    self.upload_dir, filename, data_stream(), conflict=conflict
+                )
+
+                if result.get("skipped"):
+                    send_json(conn, {
+                        "status": "SKIPPED",
+                        "saved_as": filename,
+                        "message": "Tệp đã tồn tại trên Server",
+                    })
+                    return
                 
                 
                 send_json(conn, {

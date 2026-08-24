@@ -38,7 +38,9 @@ Client mở **một kết nối TCP cho mỗi file** (không chia sẻ một soc
 4. **Confirm** — Server trả `{"status": "SUCCESS", "saved_as": "file.txt", "bytes": N}`.
 5. **Terminate** — Đóng socket hai phía.
 
-**Trùng tên:** nếu đã có `file.txt` → lưu `file_1.txt`, `file_2.txt`, …
+**Trùng tên:** TCP header hỗ trợ field tùy chọn `conflict` với ba giá trị `rename`, `overwrite`, `skip`. Client cũ không gửi field này vẫn hoạt động và mặc định `rename`. Khi đổi tên, `file.txt` lần lượt thành `file(1).txt`, `file(2).txt`, …
+
+**Validation:** chỉ nhận `.txt`, `.pdf`, `.jpg`, `.jpeg`, `.doc`, `.docx`; tối đa 10 GB mỗi file.
 
 **Timeout / mất mạng:** `socket.settimeout(5)`. Server bắt exception, **xóa file tạm `.part` chưa hoàn chỉnh**, rồi đóng socket.
 

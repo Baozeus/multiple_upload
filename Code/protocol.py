@@ -7,6 +7,10 @@ HEADER_MAX = 64 * 1024
 CHUNK_SIZE = 4096
 DEFAULT_TIMEOUT = 5.0
 DEFAULT_PORT = 9000
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024
+ALLOWED_EXTENSIONS = frozenset({".txt", ".pdf", ".jpg", ".jpeg", ".doc", ".docx"})
+CONFLICT_POLICIES = frozenset({"rename", "overwrite", "skip"})
+DEFAULT_CONFLICT_POLICY = "rename"
 
 SAFE_NAME = re.compile(r"^[\w.\- ()\[\]]+$", re.UNICODE)
 
@@ -65,9 +69,21 @@ def validate_upload_header(header):
         raise ValueError("filesize phai la so nguyen")
     if filesize < 0:
         raise ValueError("filesize phai >= 0")
-    if filesize > 10 * 1024 * 1024 * 1024:
+    extension = os.path.splitext(filename)[1].lower()
+    if extension not in ALLOWED_EXTENSIONS:
+        allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
+        raise ValueError("Dinh dang file khong duoc ho tro. Cho phep: " + allowed)
+    if filesize > MAX_UPLOAD_SIZE:
         raise ValueError("File qua lon (max 10GB)")
     return filename, filesize
+
+
+def validate_conflict_policy(header):
+    """Đọc chính sách trùng tên; Client cũ mặc định dùng ``rename``."""
+    policy = str(header.get("conflict", DEFAULT_CONFLICT_POLICY)).strip().lower()
+    if policy not in CONFLICT_POLICIES:
+        raise ValueError("conflict phai la rename, overwrite hoac skip")
+    return policy
 
 
 def format_size(num_bytes):

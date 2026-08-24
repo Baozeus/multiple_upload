@@ -11,6 +11,8 @@ from .models import UploadItem, UploadStatus
 
 
 MAX_CONCURRENT_UPLOADS = 6
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024
+ALLOWED_EXTENSIONS = frozenset({".txt", ".pdf", ".jpg", ".jpeg", ".doc", ".docx"})
 
 
 class UploadQueue:
@@ -19,13 +21,32 @@ class UploadQueue:
             raise ValueError("Giới hạn upload đồng thời phải nằm trong khoảng 1–6.")
         self.max_concurrent = max_concurrent
         self.items: OrderedDict[str, UploadItem] = OrderedDict()
+        self.rejected: list[tuple[Path, str]] = []
 
     def add_paths(self, paths: Iterable[str | Path]) -> list[UploadItem]:
+        self.rejected = []
         existing = {item.path.resolve() for item in self.items.values()}
         added: list[UploadItem] = []
         for raw_path in paths:
             path = Path(raw_path).resolve()
-            if path in existing or not path.is_file():
+            if path in existing:
+                self.rejected.append((path, "Tệp đã có trong danh sách."))
+                continue
+            if not path.is_file():
+                self.rejected.append((path, "Không tìm thấy tệp hoặc đường dẫn không hợp lệ."))
+                continue
+            if path.suffix.lower() not in ALLOWED_EXTENSIONS:
+                self.rejected.append(
+                    (path, "Định dạng không được hỗ trợ (.txt, .pdf, .jpg, .jpeg, .doc, .docx).")
+                )
+                continue
+            try:
+                size = path.stat().st_size
+            except OSError:
+                self.rejected.append((path, "Không thể đọc thông tin tệp."))
+                continue
+            if size > MAX_UPLOAD_SIZE:
+                self.rejected.append((path, "Dung lượng vượt quá giới hạn 10 GB."))
                 continue
             item = UploadItem(path=path)
             self.items[item.id] = item

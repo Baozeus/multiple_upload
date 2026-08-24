@@ -241,9 +241,12 @@ class ConnectionBadge(QFrame):
     def set_mode(self, message: str) -> None:
         lowered = message.lower()
         if "hoạt động" in lowered:
-            state, text = "success", "API đang hoạt động"
-        elif "api:" in lowered:
-            state, text = "configured", "API đã cấu hình"
+            state = "success"
+            text = "TCP đang hoạt động" if "tcp" in lowered else "HTTP đang hoạt động"
+        elif "tcp:" in lowered:
+            state, text = "configured", "TCP đã cấu hình"
+        elif "http:" in lowered or "api:" in lowered:
+            state, text = "configured", "HTTP đã cấu hình"
         elif "fallback" in lowered or "mô phỏng" in lowered:
             state, text = "warning", "Mô phỏng cục bộ"
         else:

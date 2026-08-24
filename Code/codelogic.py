@@ -14,13 +14,9 @@ class QuanlyUpload :
         
         self.failed = []
         
-    def add_file(self , file ) : 
-        if len(self.uploading) < self.so_file_toi_da : 
-          self.uploading.append(file) 
-          print(f"{file} -> Đang tải ")
-        else : 
-          self.queue.append(file) 
-          print(f"{file} -> Chờ ")
+    def add_file(self , file ) :
+        self.queue.append(file)
+        print(f"{file} -> Chờ ")
         
 
     def upload_success(self, file):
@@ -69,4 +65,3 @@ class QuanlyUpload :
         print("Hoàn tất:", self.completed)
 
         print("Lỗi:", self.failed)
-        

@@ -30,6 +30,7 @@ from .theme import APP_STYLESHEET
 from .uploader import UploadCoordinator
 from .widgets import (
     BrandMark,
+    ConnectionBadge,
     DropZone,
     FileRow,
     HistoryRow,
@@ -136,12 +137,13 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(page)
         layout.setContentsMargins(30, 24, 30, 22)
         layout.setSpacing(16)
-        layout.addLayout(
-            self._page_header(
-                "Tải lên nhiều tệp",
-                "Thêm tệp và theo dõi từng tiến trình trong một hàng đợi rõ ràng.",
-            )
+        header = self._page_header(
+            "Tải lên nhiều tệp",
+            "Thêm tệp và theo dõi từng tiến trình trong một hàng đợi rõ ràng.",
         )
+        self.connection_badge = ConnectionBadge()
+        header.addWidget(self.connection_badge, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addLayout(header)
 
         self.drop_zone = DropZone()
         self.drop_zone.files_dropped.connect(self.coordinator.add_files)
@@ -219,6 +221,21 @@ class MainWindow(QMainWindow):
         self.clear_button.clicked.connect(self._confirm_clear)
         toolbar_layout.addLayout(title_group)
         toolbar_layout.addStretch()
+        conflict_label = QLabel("Khi trùng tên")
+        conflict_label.setObjectName("sectionMeta")
+        self.conflict_select = QComboBox()
+        self.conflict_select.addItem("Đổi tên", "rename")
+        self.conflict_select.addItem("Ghi đè", "overwrite")
+        self.conflict_select.addItem("Bỏ qua", "skip")
+        self.conflict_select.setAccessibleName("Cách xử lý khi tệp trùng tên")
+        configured_policy = self.coordinator.config.conflict_policy
+        configured_index = self.conflict_select.findData(configured_policy)
+        self.conflict_select.setCurrentIndex(max(0, configured_index))
+        self.conflict_select.currentIndexChanged.connect(
+            self._change_conflict_policy
+        )
+        toolbar_layout.addWidget(conflict_label)
+        toolbar_layout.addWidget(self.conflict_select)
         toolbar_layout.addWidget(add_button)
         toolbar_layout.addWidget(self.clear_button)
         panel_layout.addWidget(toolbar)
@@ -248,7 +265,9 @@ class MainWindow(QMainWindow):
         footer_layout.setContentsMargins(14, 8, 12, 8)
         self.footer_summary = QLabel()
         self.footer_summary.setObjectName("sectionMeta")
-        footer_note = QLabel("FIFO · tối đa 6 tệp cùng lúc")
+        footer_note = QLabel(
+            f"FIFO · tối đa {self.coordinator.queue.max_concurrent} tệp cùng lúc"
+        )
         footer_note.setObjectName("sectionMeta")
         footer_layout.addWidget(self.footer_summary)
         footer_layout.addStretch()
@@ -274,7 +293,7 @@ class MainWindow(QMainWindow):
         notice_layout = QHBoxLayout(notice)
         notice_layout.setContentsMargins(13, 9, 13, 9)
         notice_text = QLabel(
-            "Lịch sử đang được lưu cục bộ vì server chưa có API lịch sử. "
+            "Lịch sử đang được lưu cục bộ vì Server chưa có endpoint lịch sử. "
             "Dữ liệu không tự đồng bộ giữa các máy."
         )
         notice_text.setObjectName("infoText")
@@ -387,16 +406,20 @@ class MainWindow(QMainWindow):
         ]
 
     def _set_initial_connection_mode(self) -> None:
-        message = (
-            f"API: {self.coordinator.config.base_url}"
-            if self.coordinator.config.upload_url
-            else "Chế độ mô phỏng — chưa cấu hình API"
-        )
-        self._set_connection_mode(message)
+        self._set_connection_mode(self.coordinator.config.mode_label)
 
     def _set_connection_mode(self, message: str) -> None:
-        # Trạng thái kết nối vẫn được duy trì cho logic/runtime nhưng không hiển thị.
         self._connection_mode_message = message
+        if hasattr(self, "connection_badge"):
+            self.connection_badge.set_mode(message)
+
+    def _change_conflict_policy(self, _index: int = -1) -> None:
+        policy = self.conflict_select.currentData()
+        if isinstance(policy, str):
+            self.coordinator.set_conflict_policy(policy)
+            self._show_notification(
+                f"Tệp đang chờ sẽ dùng lựa chọn trùng tên: {self.conflict_select.currentText()}."
+            )
 
     def _show_page(self, index: int) -> None:
         self.pages.setCurrentIndex(index)
@@ -410,7 +433,12 @@ class MainWindow(QMainWindow):
         self.history_search.setFocus(Qt.FocusReason.ShortcutFocusReason)
 
     def _choose_files(self) -> None:
-        paths, _ = QFileDialog.getOpenFileNames(self, "Chọn tệp để tải lên")
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Chọn tệp để tải lên",
+            "",
+            "Tệp hỗ trợ (*.txt *.pdf *.jpg *.jpeg *.doc *.docx)",
+        )
         if paths:
             self.coordinator.add_files(paths)
 
