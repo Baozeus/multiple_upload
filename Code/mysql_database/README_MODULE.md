@@ -17,14 +17,11 @@ MySqlHistoryRepository và schema upload_batches/upload_files/upload_events.
 Giữ nguyên cột Vị trí khi ghép trong MODULE_MANIFEST.md. Không ghi đè mặc định;
 nếu file đích tồn tại, leader phải so sánh nội dung trước.
 
-## Cách chạy test
+## Cách kiểm tra
 
-Từ D:\UDM_GitHub_Handoff:
-
-    D:\UDM\.venv\Scripts\python.exe 09_integration\verify_handoff.py --module 07_mysql_database
-
-Verifier ghép module và dependency vào thư mục temp, đặt PYTHONDONTWRITEBYTECODE
-và không ghi vào D:\UDM.
+Module này là gói bàn giao không được bật trong runtime mặc định. Test import
+phụ thuộc `00_shared_contracts`; chỉ chạy sau khi nhóm tích hợp dependency đó.
+Không kết nối MySQL hoặc chạy migration khi chỉ kiểm tra cấu trúc repository.
 
 ## Điều kiện hoàn thành
 

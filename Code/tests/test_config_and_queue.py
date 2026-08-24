@@ -8,8 +8,8 @@ import unittest
 from unittest.mock import patch
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "ui-handoff" / "client"))
+CODE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(CODE_ROOT / "ui-handoff" / "client"))
 
 from multiple_upload_client.config import ClientConfig
 from multiple_upload_client.models import UploadStatus

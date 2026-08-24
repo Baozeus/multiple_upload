@@ -2,7 +2,7 @@
 
 ## Mục đích
 
-`ui-handoff/` là bản sao độc lập chỉ chứa client desktop PySide6 và các module
+`Code/ui-handoff/` chứa client desktop PySide6 và các module
 nội bộ tối thiểu để giao diện có thể import, khởi chạy và hiển thị đầy đủ các
 trạng thái upload. Gói này không sửa source gốc, không chứa server, database,
 dữ liệu lịch sử, thông tin đăng nhập hay cấu hình máy cá nhân.
@@ -13,7 +13,7 @@ tối đa 6 lượt upload đồng thời; các file còn lại ở trạng thá
 ## Cây thư mục
 
 ```text
-ui-handoff/
+Code/ui-handoff/
 ├── README.md
 ├── MANIFEST.md
 └── client/
@@ -83,9 +83,9 @@ client không thể import hoặc không thể thể hiện hàng đợi/progres
 ## Cách áp dụng vào nhánh tổng hợp
 
 1. Tạo nhánh tích hợp riêng và đảm bảo working tree sạch.
-2. Sao chép `ui-handoff/client/multiple_upload_client/` vào thư mục client của
+2. Sử dụng `Code/ui-handoff/client/multiple_upload_client/` làm package client của
    dự án tổng hợp, giữ nguyên package name `multiple_upload_client`.
-3. Sao chép `ui-handoff/client/run.py` nếu nhánh đích chưa có entry point tương
+3. Chạy `Code/ui-handoff/client/run.py` làm entry point; nếu nhánh đích đã có entry point tương
    đương. Nếu đã có, giữ entry point cũ và gọi
    `multiple_upload_client.__main__.main()`.
 4. Gộp dependency `PySide6==6.9.1` vào dependency/lock file của nhánh đích;
@@ -130,14 +130,14 @@ Các lệnh PowerShell sau giả định dependency đã được cài trong vir
 environment của nhóm:
 
 ```powershell
-cd ui-handoff\client
+cd Code\ui-handoff\client
 python run.py
 ```
 
 Nếu cần tạo môi trường mới, nhóm có thể dùng dependency đã khai báo:
 
 ```powershell
-cd ui-handoff\client
+cd Code\ui-handoff\client
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
@@ -150,7 +150,7 @@ dùng mock fallback để kiểm tra trạng thái giao diện.
 ## Lệnh kiểm tra sau khi áp dụng
 
 ```powershell
-cd ui-handoff\client
+cd Code\ui-handoff\client
 python -m compileall multiple_upload_client
 python -c "from multiple_upload_client.main_window import MainWindow; print('UI import OK')"
 python run.py

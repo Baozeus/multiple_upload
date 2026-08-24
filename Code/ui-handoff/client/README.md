@@ -1,6 +1,6 @@
 # Client giao diện mới (PySide6)
 
-Giao diện trong thư mục này là Client chính của bản preview. Client dùng TCP mặc định để tương thích trực tiếp với `Code/server.py`; HTTP Adapter cũ vẫn được giữ lại và chỉ hoạt động khi cấu hình `transport: "http"`.
+Giao diện trong thư mục này là Client chính. Client dùng TCP mặc định để tương thích trực tiếp với `Code/server.py`; HTTP Adapter cũ vẫn được giữ lại và chỉ hoạt động khi cấu hình `transport: "http"`.
 
 ## Cấu hình
 
@@ -33,9 +33,9 @@ Các biến môi trường tương ứng:
 ## Chạy
 
 ```powershell
-python -m pip install -r ui-handoff/client/requirements.txt
+python -m pip install -r Code/ui-handoff/client/requirements.txt
 python Code/server.py --host 127.0.0.1 --port 9000
-python ui-handoff/client/run.py
+python Code/ui-handoff/client/run.py
 ```
 
 Trong giao diện, chọn chính sách **Đổi tên**, **Ghi đè** hoặc **Bỏ qua** trước khi thêm file. Các tệp đang chờ sẽ nhận lựa chọn mới; tệp đang tải không bị thay đổi giữa chừng.

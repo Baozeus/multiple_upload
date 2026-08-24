@@ -4,6 +4,16 @@
 
 ## Kiến trúc
 
+Source tổng được gom trong `Code/`:
+
+| Thư mục | Vai trò |
+|---|---|
+| `ui-handoff/` | Client PySide6 chính, TCP mặc định và HTTP Adapter tương thích |
+| `tests/` | Unit test và smoke test của luồng upload |
+| `mysql_database/` | Module MySQL bàn giao, không được bật trong runtime mặc định |
+
+Các file Python trực tiếp trong `Code/` là TCP Server, protocol dùng chung và Client Tkinter cũ.
+
 **Mô hình:** Client–Server đa luồng (multi-threaded).
 
 | Thành phần | Vai trò |
@@ -15,8 +25,8 @@
 Demo bắt buộc chạy **hai process độc lập** (có thể trên cùng máy):
 
 ```text
-Terminal 1:  python server.py --port 9000
-Terminal 2:  python client.py
+Terminal 1:  python Code/server.py --port 9000
+Terminal 2:  python Code/ui-handoff/client/run.py
 ```
 
 Client mở **một kết nối TCP cho mỗi file** (không chia sẻ một socket cho nhiều file).
@@ -68,16 +78,16 @@ Client mở **một kết nối TCP cho mỗi file** (không chia sẻ một soc
 
 ## Cài đặt & chạy
 
-Chỉ cần Python (stdlib: `socket`, `threading`, `tkinter`) — không cài thêm thư viện.
+TCP Server chỉ dùng Python standard library. Client giao diện mới cần dependency trong `Code/ui-handoff/client/requirements.txt`.
 
 ```bash
-cd UML-10
+cd <thu-muc-repository-UDM_10>
 
 # Terminal 1 — Server
-python server.py --host 0.0.0.0 --port 9000 --dir uploads
+python Code/server.py --host 0.0.0.0 --port 9000 --dir uploads
 
 # Terminal 2 — Client
-python client.py
+python Code/ui-handoff/client/run.py
 ```
 
 Trên Client: nhập IP (`127.0.0.1` nếu cùng máy), Port `9000` → **Connect/Check** → **Chọn file**.
@@ -87,11 +97,13 @@ File nhận được nằm trong thư mục `uploads/`.
 ## Cấu trúc thư mục
 
 ```text
-UML-10/
+Code/
+├── ui-handoff/        # Client PySide6 chính
+├── tests/             # Unit test và TCP smoke test
+├── mysql_database/    # Module bàn giao, không bật mặc định
 ├── protocol.py        # Framing + validation chung
 ├── server.py          # Server đa luồng
-├── client.py          # GUI Client + state machine
+├── client.py          # GUI Tkinter cũ
 ├── requirements.txt
-├── README.md
-└── uploads/           # Tạo khi chạy server
+└── README.md
 ```

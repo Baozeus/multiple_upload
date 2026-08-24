@@ -7,8 +7,8 @@ import unittest
 from unittest.mock import patch
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "Code"))
+CODE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(CODE_ROOT))
 
 from protocol import MAX_UPLOAD_SIZE, validate_conflict_policy, validate_upload_header
 from duplicate_handler import release_file, reserve_file_path
