@@ -1,46 +1,11 @@
-# Secrets and local configuration
-.env
-.env.*
-!.env.example
-
-# Python cache and tooling
-__pycache__/
-*.py[cod]
-*.pyo
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-.qa/
-.impeccable/
-
-# Virtual environments
+# Python virtual environment
 .venv/
-venv/
-env/
 
-# Build artifacts
-build/
-dist/
-*.egg-info/
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
 
-# Runtime files
-uploads/*
-!uploads/.gitkeep
-logs/
-*.log
-database/history.json
-database/history.json.tmp
-database/*.db
-database/*.sqlite*
-database/dumps/
-database/backups/
-*.sql.gz
-*.dump
-
-# IDE and OS files
-.idea/
-.vscode/
-.DS_Store
-Thumbs.db
+# Uploaded files
+uploads/
+**/uploads/
