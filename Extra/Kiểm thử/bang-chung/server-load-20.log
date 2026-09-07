@@ -1,0 +1,110 @@
+[SERVER] Listening on 127.0.0.1:64219
+[SERVER] Lưu file vào: C:\Users\ADMIN\AppData\Local\Temp\udm10-qa-lszwcpbs\load-20-uploads
+[SERVER] Bấm Ctrl+C để dừng.
+[SERVER] Connected: 127.0.0.1:64220
+[SERVER] ERROR 127.0.0.1:64220: [WinError 10054] An existing connection was forcibly closed by the remote host
+Traceback (most recent call last):
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 69, in handle_client
+    header = recv_json(conn)
+             ^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\protocol.py", line 39, in recv_json
+    length = int.from_bytes(recv_exact(sock, 4), "big")
+                            ^^^^^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\protocol.py", line 30, in recv_exact
+    chunk = sock.recv(n - len(buf))
+            ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 71, in handle_client
+    send_json(conn, {"status": "ERROR", "message": "Header loi: " + str(e)})
+  File "D:\UDM\multiple_upload-github-push\Code\protocol.py", line 23, in send_json
+    sock.sendall(len(raw).to_bytes(4, "big") + raw)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+[SERVER] Closed: 127.0.0.1:64220
+[SERVER] Connected: 127.0.0.1:64221
+[SERVER] Nhan 'qa-readiness.txt' (0 byte)
+[SERVER] OK 127.0.0.1:64221: luu qa-readiness.txt (0 byte)
+[SERVER] Closed: 127.0.0.1:64221
+[SERVER] Connected: 127.0.0.1:64223
+[SERVER] Nhan 'load-20-015.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64222
+[SERVER] Connected: 127.0.0.1:64224
+[SERVER] Connected: 127.0.0.1:64225[SERVER] Nhan 'load-20-013.txt' (2097152 byte)
+
+[SERVER] Nhan 'load-20-001.txt' (2097152 byte)[SERVER] Nhan 'load-20-002.txt' (2097152 byte)
+
+[SERVER] Connected: 127.0.0.1:64226
+[SERVER] Nhan 'load-20-003.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64227
+[SERVER] Nhan 'load-20-012.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64228
+[SERVER] Connected: 127.0.0.1:64229
+[SERVER] Nhan 'load-20-010.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64230
+[SERVER] Nhan 'load-20-018.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64231
+[SERVER] Nhan 'load-20-017.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64233
+[SERVER] Nhan 'load-20-000.txt' (2097152 byte)[SERVER] Connected: 127.0.0.1:64232
+
+[SERVER] Nhan 'load-20-019.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64234
+[SERVER] Connected: 127.0.0.1:64236
+[SERVER] Nhan 'load-20-006.txt' (2097152 byte)[SERVER] Connected: 127.0.0.1:64235[SERVER] Nhan 'load-20-014.txt' (2097152 byte)
+[SERVER] Nhan 'load-20-011.txt' (2097152 byte)
+
+[SERVER] Connected: 127.0.0.1:64237
+
+[SERVER] Connected: 127.0.0.1:64238[SERVER] Nhan 'load-20-007.txt' (2097152 byte)
+
+[SERVER] Connected: 127.0.0.1:64239
+[SERVER] Nhan 'load-20-016.txt' (2097152 byte)[SERVER] Nhan 'load-20-005.txt' (2097152 byte)
+[SERVER] Nhan 'load-20-008.txt' (2097152 byte)
+
+[SERVER] Connected: 127.0.0.1:64241
+[SERVER] Nhan 'load-20-009.txt' (2097152 byte)[SERVER] Connected: 127.0.0.1:64240
+
+[SERVER] Nhan 'load-20-004.txt' (2097152 byte)
+[SERVER] OK 127.0.0.1:64224: luu load-20-002.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64224
+[SERVER] OK 127.0.0.1:64226: luu load-20-003.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64226
+[SERVER] OK 127.0.0.1:64223: luu load-20-015.txt (2097152 byte)
+[SERVER] OK 127.0.0.1:64227: luu load-20-012.txt (2097152 byte)[SERVER] Closed: 127.0.0.1:64223
+
+[SERVER] Closed: 127.0.0.1:64227
+[SERVER] OK 127.0.0.1:64229: luu load-20-018.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64229
+[SERVER] OK 127.0.0.1:64231: luu load-20-019.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64231
+[SERVER] OK 127.0.0.1:64240: luu load-20-004.txt (2097152 byte)
+[SERVER] OK 127.0.0.1:64230: luu load-20-017.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64240
+[SERVER] Closed: 127.0.0.1:64230
+[SERVER] OK 127.0.0.1:64233: luu load-20-000.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64233
+[SERVER] OK 127.0.0.1:64225: luu load-20-001.txt (2097152 byte)[SERVER] OK 127.0.0.1:64222: luu load-20-013.txt (2097152 byte)
+
+[SERVER] Closed: 127.0.0.1:64222[SERVER] Closed: 127.0.0.1:64225
+
+[SERVER] OK 127.0.0.1:64235: luu load-20-008.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64235
+[SERVER] OK 127.0.0.1:64238: luu load-20-016.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64238
+[SERVER] OK 127.0.0.1:64239: luu load-20-005.txt (2097152 byte)
+[SERVER] OK 127.0.0.1:64241: luu load-20-009.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64239
+[SERVER] Closed: 127.0.0.1:64241
+[SERVER] OK 127.0.0.1:64228: luu load-20-010.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64228
+[SERVER] OK 127.0.0.1:64237: luu load-20-007.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64237
+[SERVER] OK 127.0.0.1:64234: luu load-20-011.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64234
+[SERVER] OK 127.0.0.1:64232: luu load-20-014.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64232
+[SERVER] OK 127.0.0.1:64236: luu load-20-006.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64236

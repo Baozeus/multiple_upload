@@ -1,0 +1,27 @@
+[SERVER] Listening on 127.0.0.1:64211
+[SERVER] Lưu file vào: C:\Users\ADMIN\AppData\Local\Temp\udm10-qa-lszwcpbs\load-5-uploads
+[SERVER] Bấm Ctrl+C để dừng.
+[SERVER] Connected: 127.0.0.1:64213
+[SERVER] Nhan 'qa-readiness.txt' (0 byte)
+[SERVER] OK 127.0.0.1:64213: luu qa-readiness.txt (0 byte)
+[SERVER] Closed: 127.0.0.1:64213
+[SERVER] Connected: 127.0.0.1:64214
+[SERVER] Connected: 127.0.0.1:64218[SERVER] Nhan 'load-5-001.txt' (2097152 byte)
+
+[SERVER] Connected: 127.0.0.1:64216
+[SERVER] Connected: 127.0.0.1:64215
+[SERVER] Nhan 'load-5-004.txt' (2097152 byte)[SERVER] Nhan 'load-5-003.txt' (2097152 byte)
+[SERVER] Connected: 127.0.0.1:64217
+
+[SERVER] Nhan 'load-5-000.txt' (2097152 byte)[SERVER] Nhan 'load-5-002.txt' (2097152 byte)
+
+[SERVER] OK 127.0.0.1:64215: luu load-5-000.txt (2097152 byte)
+[SERVER] OK 127.0.0.1:64216: luu load-5-003.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64216[SERVER] Closed: 127.0.0.1:64215
+
+[SERVER] OK 127.0.0.1:64217: luu load-5-002.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64217
+[SERVER] OK 127.0.0.1:64218: luu load-5-004.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64218
+[SERVER] OK 127.0.0.1:64214: luu load-5-001.txt (2097152 byte)
+[SERVER] Closed: 127.0.0.1:64214

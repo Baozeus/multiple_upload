@@ -1,0 +1,36 @@
+[
+  {
+    "clients": 5,
+    "file_size_mib": 2,
+    "total_mib": 10,
+    "duration_seconds": 0.084507,
+    "throughput_mib_s": 118.333,
+    "requests_per_second": 59.166,
+    "latency_mean_ms": 81.574,
+    "latency_p50_ms": 81.698,
+    "latency_p95_ms": 82.92,
+    "latency_max_ms": 82.92,
+    "success_count": 5,
+    "error_count": 0,
+    "error_rate_percent": 0.0,
+    "errors": [],
+    "server_log": "server-load-5.log"
+  },
+  {
+    "clients": 20,
+    "file_size_mib": 2,
+    "total_mib": 40,
+    "duration_seconds": 0.397867,
+    "throughput_mib_s": 100.536,
+    "requests_per_second": 50.268,
+    "latency_mean_ms": 361.986,
+    "latency_p50_ms": 382.816,
+    "latency_p95_ms": 394.846,
+    "latency_max_ms": 395.169,
+    "success_count": 20,
+    "error_count": 0,
+    "error_rate_percent": 0.0,
+    "errors": [],
+    "server_log": "server-load-20.log"
+  }
+]

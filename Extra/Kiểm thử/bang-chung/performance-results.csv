@@ -1,0 +1,3 @@
+﻿clients,file_size_mib,total_mib,duration_seconds,throughput_mib_s,requests_per_second,latency_mean_ms,latency_p50_ms,latency_p95_ms,latency_max_ms,success_count,error_count,error_rate_percent
+5,2,10,0.084507,118.333,59.166,81.574,81.698,82.92,82.92,5,0,0.0
+20,2,40,0.397867,100.536,50.268,361.986,382.816,394.846,395.169,20,0,0.0

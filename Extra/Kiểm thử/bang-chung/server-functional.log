@@ -1,0 +1,102 @@
+[SERVER] Listening on 127.0.0.1:64188
+[SERVER] Lưu file vào: C:\Users\ADMIN\AppData\Local\Temp\udm10-qa-lszwcpbs\functional-uploads
+[SERVER] Bấm Ctrl+C để dừng.
+[SERVER] Connected: 127.0.0.1:64190
+[SERVER] Nhan 'qa-readiness.txt' (0 byte)
+[SERVER] OK 127.0.0.1:64190: luu qa-readiness.txt (0 byte)
+[SERVER] Closed: 127.0.0.1:64190
+[SERVER] Connected: 127.0.0.1:64191
+[SERVER] Nhan 'ui-dropped.txt' (39 byte)
+[SERVER] OK 127.0.0.1:64191: luu ui-dropped.txt (39 byte)
+[SERVER] Closed: 127.0.0.1:64191
+[SERVER] Connected: 127.0.0.1:64192
+[SERVER] Nhan 'supported-0.txt' (18 byte)
+[SERVER] OK 127.0.0.1:64192: luu supported-0.txt (18 byte)
+[SERVER] Closed: 127.0.0.1:64192
+[SERVER] Connected: 127.0.0.1:64193
+[SERVER] Nhan 'supported-1.pdf' (18 byte)
+[SERVER] OK 127.0.0.1:64193: luu supported-1.pdf (18 byte)
+[SERVER] Closed: 127.0.0.1:64193
+[SERVER] Connected: 127.0.0.1:64194
+[SERVER] Nhan 'supported-2.jpg' (18 byte)
+[SERVER] OK 127.0.0.1:64194: luu supported-2.jpg (18 byte)
+[SERVER] Closed: 127.0.0.1:64194
+[SERVER] Connected: 127.0.0.1:64195
+[SERVER] Nhan 'supported-3.jpeg' (19 byte)
+[SERVER] OK 127.0.0.1:64195: luu supported-3.jpeg (19 byte)
+[SERVER] Closed: 127.0.0.1:64195
+[SERVER] Connected: 127.0.0.1:64196
+[SERVER] Nhan 'supported-4.doc' (18 byte)
+[SERVER] OK 127.0.0.1:64196: luu supported-4.doc (18 byte)
+[SERVER] Closed: 127.0.0.1:64196
+[SERVER] Connected: 127.0.0.1:64197
+[SERVER] Nhan 'supported-5.docx' (19 byte)
+[SERVER] OK 127.0.0.1:64197: luu supported-5.docx (19 byte)
+[SERVER] Closed: 127.0.0.1:64197
+[SERVER] Connected: 127.0.0.1:64198
+[SERVER] Nhan 'progress.txt' (1048576 byte)
+[SERVER] OK 127.0.0.1:64198: luu progress.txt (1048576 byte)
+[SERVER] Closed: 127.0.0.1:64198
+[SERVER] Connected: 127.0.0.1:64199
+[SERVER] Nhan 'conflict.txt' (7 byte)
+[SERVER] OK 127.0.0.1:64199: luu conflict(1).txt (7 byte)
+[SERVER] Closed: 127.0.0.1:64199
+[SERVER] Connected: 127.0.0.1:64200
+[SERVER] Nhan 'conflict.txt' (11 byte)
+[SERVER] OK 127.0.0.1:64200: luu conflict.txt (11 byte)
+[SERVER] Closed: 127.0.0.1:64200
+[SERVER] Connected: 127.0.0.1:64201
+[SERVER] SKIP 127.0.0.1:64201: conflict.txt
+[SERVER] Closed: 127.0.0.1:64201
+[SERVER] Connected: 127.0.0.1:64202
+[SERVER] Tu choi 127.0.0.1:64202: Thiếu filename hoặc filesize
+[SERVER] Closed: 127.0.0.1:64202
+[SERVER] Connected: 127.0.0.1:64203
+[SERVER] Tu choi 127.0.0.1:64203: filesize phai >= 0
+[SERVER] Closed: 127.0.0.1:64203
+[SERVER] Connected: 127.0.0.1:64204
+[SERVER] Nhan 'escape.txt' (9 byte)
+[SERVER] OK 127.0.0.1:64204: luu escape.txt (9 byte)
+[SERVER] Closed: 127.0.0.1:64204
+[SERVER] Connected: 127.0.0.1:64205
+[SERVER] Nhan 'disconnect.txt' (4194304 byte)
+[SERVER] ERROR 127.0.0.1:64205: Mất kết nối khi đang nhận data
+Traceback (most recent call last):
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 111, in handle_client
+    result = save_incoming_file(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\upload_handler.py", line 25, in save_incoming_file
+    for chunk in data_stream:
+                 ^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 102, in data_stream
+    chunk = recv_exact(conn, to_read)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\protocol.py", line 32, in recv_exact
+    raise ConnectionError("Mất kết nối khi đang nhận data")
+ConnectionError: Mất kết nối khi đang nhận data
+[SERVER] Closed: 127.0.0.1:64205
+[SERVER] Connected: 127.0.0.1:64208
+[SERVER] Nhan 'empty.txt' (0 byte)
+[SERVER] OK 127.0.0.1:64208: luu empty.txt (0 byte)
+[SERVER] Closed: 127.0.0.1:64208
+[SERVER] Connected: 127.0.0.1:64209
+[SERVER] Nhan 'isolated-broken.txt' (4194304 byte)
+[SERVER] Connected: 127.0.0.1:64210
+[SERVER] ERROR 127.0.0.1:64209: Mất kết nối khi đang nhận data
+Traceback (most recent call last):
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 111, in handle_client
+    result = save_incoming_file(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\upload_handler.py", line 25, in save_incoming_file
+    for chunk in data_stream:
+                 ^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\server.py", line 102, in data_stream
+    chunk = recv_exact(conn, to_read)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\UDM\multiple_upload-github-push\Code\protocol.py", line 32, in recv_exact
+    raise ConnectionError("Mất kết nối khi đang nhận data")
+ConnectionError: Mất kết nối khi đang nhận data
+[SERVER] Closed: 127.0.0.1:64209
+[SERVER] Nhan 'isolated-valid.txt' (1048576 byte)
+[SERVER] OK 127.0.0.1:64210: luu isolated-valid.txt (1048576 byte)
+[SERVER] Closed: 127.0.0.1:64210

@@ -1,0 +1,183 @@
+[
+  {
+    "case_id": "F01",
+    "name": "Kéo-thả qua UI, upload TCP, tiến trình và lịch sử",
+    "status": "PASS",
+    "duration_seconds": 0.513029,
+    "details": {
+      "window_title": "Multiple Upload — UDM_10",
+      "status": "Hoàn tất",
+      "progress_percent": 100,
+      "saved_file": "ui-dropped.txt",
+      "history_records": 1,
+      "screenshot": "ui-upload-completed.png"
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F02",
+    "name": "Upload đủ định dạng được hỗ trợ",
+    "status": "PASS",
+    "duration_seconds": 0.142349,
+    "details": {
+      "formats": [
+        ".txt",
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".doc",
+        ".docx"
+      ],
+      "count": 6
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F03",
+    "name": "Báo tiến trình riêng cho file",
+    "status": "PASS",
+    "duration_seconds": 0.04973,
+    "details": {
+      "samples": 16,
+      "final_percent": 100
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F04",
+    "name": "Xử lý trùng tên rename/overwrite/skip",
+    "status": "PASS",
+    "duration_seconds": 0.049352,
+    "details": {
+      "rename": "conflict(1).txt",
+      "overwrite": "SUCCESS",
+      "skip": "SKIPPED"
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F05",
+    "name": "Từ chối định dạng không hợp lệ",
+    "status": "PASS",
+    "duration_seconds": 0.006658,
+    "details": {
+      "rejected": "blocked.exe",
+      "message": "Định dạng không được hỗ trợ (.txt, .pdf, .jpg, .jpeg, .doc, .docx)."
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F06",
+    "name": "Từ chối file không tồn tại",
+    "status": "PASS",
+    "duration_seconds": 0.001115,
+    "details": {
+      "rejected": "missing.txt",
+      "message": "Không tìm thấy tệp nguồn."
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F07",
+    "name": "Từ chối chính sách trùng tên sai",
+    "status": "PASS",
+    "duration_seconds": 0.003816,
+    "details": {
+      "policy": "invalid",
+      "message": "Chính sách trùng tên không hợp lệ."
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F08",
+    "name": "Server từ chối header thiếu dữ liệu",
+    "status": "PASS",
+    "duration_seconds": 0.004958,
+    "details": {
+      "server_status": "ERROR",
+      "message": "Thiếu filename hoặc filesize"
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F09",
+    "name": "Server từ chối dung lượng âm",
+    "status": "PASS",
+    "duration_seconds": 0.02794,
+    "details": {
+      "server_status": "ERROR",
+      "message": "filesize phai >= 0"
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F10",
+    "name": "Chặn path traversal trong tên file",
+    "status": "PASS",
+    "duration_seconds": 0.029095,
+    "details": {
+      "input_name": "../escape.txt",
+      "saved_as": "escape.txt"
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F11",
+    "name": "Ngắt kết nối đột ngột và dọn file tạm",
+    "status": "PASS",
+    "duration_seconds": 0.005936,
+    "details": {
+      "declared_bytes": 4194304,
+      "sent_bytes": 49152,
+      "partial_files_remaining": 0
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F12",
+    "name": "Báo lỗi khi Server không sẵn sàng",
+    "status": "PASS",
+    "duration_seconds": 0.519394,
+    "details": {
+      "port": 64206,
+      "message": "Kết nối TCP quá thời gian chờ. Hãy thử lại."
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F13",
+    "name": "Upload file rỗng hợp lệ",
+    "status": "PASS",
+    "duration_seconds": 0.01106,
+    "details": {
+      "bytes": 0,
+      "progress": 100
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F14",
+    "name": "Hàng đợi FIFO giới hạn 3 upload đồng thời",
+    "status": "PASS",
+    "duration_seconds": 0.005652,
+    "details": {
+      "files_added": 5,
+      "active_uploads": 3,
+      "waiting_files": 2,
+      "configured_limit": 3
+    },
+    "error": ""
+  },
+  {
+    "case_id": "F15",
+    "name": "Một Client lỗi không làm dừng Client khác",
+    "status": "PASS",
+    "duration_seconds": 0.078745,
+    "details": {
+      "broken_client": "disconnected",
+      "valid_client": "SUCCESS",
+      "valid_bytes": 1048576
+    },
+    "error": ""
+  }
+]

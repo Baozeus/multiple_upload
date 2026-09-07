@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "test_count": 17,
+  "exit_code": 0,
+  "duration_seconds": 0.602622,
+  "log": "regression-tests.log"
+}

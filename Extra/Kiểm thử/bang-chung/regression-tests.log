@@ -1,0 +1,45 @@
+test_http_adapter_keeps_legacy_url_contract (test_config_and_queue.ConfigTests.test_http_adapter_keeps_legacy_url_contract) ... ok
+test_tcp_is_default_transport (test_config_and_queue.ConfigTests.test_tcp_is_default_transport) ... ok
+test_fifo_limit_and_validation (test_config_and_queue.QueueTests.test_fifo_limit_and_validation) ... ok
+test_new_files_enter_fifo_queue_before_worker_assignment (test_legacy_queue.LegacyQueueTests.test_new_files_enter_fifo_queue_before_worker_assignment) ... ok
+test_accepts_supported_extension_at_exact_10_gb_limit (test_protocol_and_storage.ProtocolValidationTests.test_accepts_supported_extension_at_exact_10_gb_limit) ... ok
+test_old_client_defaults_to_rename (test_protocol_and_storage.ProtocolValidationTests.test_old_client_defaults_to_rename) ... ok
+test_rejects_file_larger_than_10_gb (test_protocol_and_storage.ProtocolValidationTests.test_rejects_file_larger_than_10_gb) ... ok
+test_rejects_unknown_conflict_policy (test_protocol_and_storage.ProtocolValidationTests.test_rejects_unknown_conflict_policy) ... ok
+test_rejects_unsupported_extension (test_protocol_and_storage.ProtocolValidationTests.test_rejects_unsupported_extension) ... ok
+test_failed_stream_keeps_existing_file_and_cleans_part (test_protocol_and_storage.StorageConflictTests.test_failed_stream_keeps_existing_file_and_cleans_part) ... ok
+test_overwrite_replaces_only_after_complete_write (test_protocol_and_storage.StorageConflictTests.test_overwrite_replaces_only_after_complete_write) ... ok
+test_rename_preserves_existing_file (test_protocol_and_storage.StorageConflictTests.test_rename_preserves_existing_file) ... ok
+test_skip_preserves_existing_file (test_protocol_and_storage.StorageConflictTests.test_skip_preserves_existing_file) ... ok
+test_tempfile_failure_releases_reserved_destination (test_protocol_and_storage.StorageConflictTests.test_tempfile_failure_releases_reserved_destination) ... ok
+test_legacy_tcp_header_without_conflict_still_renames (test_tcp_smoke.TcpUploadSmokeTests.test_legacy_tcp_header_without_conflict_still_renames) ... ok
+test_tcp_rename_overwrite_and_skip (test_tcp_smoke.TcpUploadSmokeTests.test_tcp_rename_overwrite_and_skip) ... ok
+test_tcp_upload_reports_progress_and_writes_file (test_tcp_smoke.TcpUploadSmokeTests.test_tcp_upload_reports_progress_and_writes_file) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.140s
+
+OK
+{'name': 'file-0.txt'} -> Chờ 
+{'name': 'file-1.txt'} -> Chờ 
+{'name': 'file-2.txt'} -> Chờ 
+{'name': 'file-3.txt'} -> Chờ 
+[SERVER] Connected: 127.0.0.1:64179
+[SERVER] Nhan 'legacy.txt' (13 byte)
+[SERVER] OK 127.0.0.1:64179: luu legacy(1).txt (13 byte)
+[SERVER] Closed: 127.0.0.1:64179
+[SERVER] Connected: 127.0.0.1:64181
+[SERVER] Nhan 'same.txt' (7 byte)
+[SERVER] OK 127.0.0.1:64181: luu same(1).txt (7 byte)
+[SERVER] Closed: 127.0.0.1:64181
+[SERVER] Connected: 127.0.0.1:64183
+[SERVER] Nhan 'same.txt' (11 byte)
+[SERVER] OK 127.0.0.1:64183: luu same.txt (11 byte)
+[SERVER] Closed: 127.0.0.1:64183
+[SERVER] Connected: 127.0.0.1:64185
+[SERVER] SKIP 127.0.0.1:64185: same.txt
+[SERVER] Closed: 127.0.0.1:64185
+[SERVER] Connected: 127.0.0.1:64187
+[SERVER] Nhan 'hello.txt' (14 byte)
+[SERVER] OK 127.0.0.1:64187: luu hello.txt (14 byte)
+[SERVER] Closed: 127.0.0.1:64187

@@ -1,0 +1,20 @@
+[2026-09-07T22:59:47+07:00] Bắt đầu QA, bằng chứng: D:\UDM\multiple_upload-github-push\docs\test-evidence\20260907-225947
+[2026-09-07T22:59:47+07:00] R01 PASS — 17 test hồi quy
+[2026-09-07T22:59:48+07:00] F01 PASS — Kéo-thả qua UI, upload TCP, tiến trình và lịch sử
+[2026-09-07T22:59:49+07:00] F02 PASS — Upload đủ định dạng được hỗ trợ
+[2026-09-07T22:59:49+07:00] F03 PASS — Báo tiến trình riêng cho file
+[2026-09-07T22:59:49+07:00] F04 PASS — Xử lý trùng tên rename/overwrite/skip
+[2026-09-07T22:59:49+07:00] F05 PASS — Từ chối định dạng không hợp lệ
+[2026-09-07T22:59:49+07:00] F06 PASS — Từ chối file không tồn tại
+[2026-09-07T22:59:49+07:00] F07 PASS — Từ chối chính sách trùng tên sai
+[2026-09-07T22:59:49+07:00] F08 PASS — Server từ chối header thiếu dữ liệu
+[2026-09-07T22:59:49+07:00] F09 PASS — Server từ chối dung lượng âm
+[2026-09-07T22:59:49+07:00] F10 PASS — Chặn path traversal trong tên file
+[2026-09-07T22:59:49+07:00] F11 PASS — Ngắt kết nối đột ngột và dọn file tạm
+[2026-09-07T22:59:49+07:00] F12 PASS — Báo lỗi khi Server không sẵn sàng
+[2026-09-07T22:59:49+07:00] F13 PASS — Upload file rỗng hợp lệ
+[2026-09-07T22:59:49+07:00] F14 PASS — Hàng đợi FIFO giới hạn 3 upload đồng thời
+[2026-09-07T22:59:49+07:00] F15 PASS — Một Client lỗi không làm dừng Client khác
+[2026-09-07T22:59:50+07:00] P05 5 client — 118.333 MiB/s, p95 82.920 ms, lỗi 0.000%
+[2026-09-07T22:59:52+07:00] P20 20 client — 100.536 MiB/s, p95 394.846 ms, lỗi 0.000%
+[2026-09-07T22:59:52+07:00] Báo cáo: D:\UDM\multiple_upload-github-push\docs\test-evidence\20260907-225947\QA_TEST_REPORT.md

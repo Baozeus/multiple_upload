@@ -1,0 +1,62 @@
+[
+  {
+    "file": "QA_TEST_REPORT.md",
+    "bytes": 6065,
+    "sha256": "2d7921d5a9983eb80443b7b0c710c62e3e0a8ea1d412da339181cb61a8d0cd89"
+  },
+  {
+    "file": "functional-results.json",
+    "bytes": 4448,
+    "sha256": "c86f9f2e6187a46ff410cd2c6f2341303564d79facc0791da10875b1c2fa34ab"
+  },
+  {
+    "file": "performance-results.csv",
+    "bytes": 336,
+    "sha256": "14fa87aa51b2260f077dc94ce23d530d3cb3f50fa223f98c3952733933a4dfe7"
+  },
+  {
+    "file": "performance-results.json",
+    "bytes": 898,
+    "sha256": "a3fe53bc2713fe466c6a7d0976ac566653ada7f0f083036c6bc399cfa6fa4eaa"
+  },
+  {
+    "file": "regression-results.json",
+    "bytes": 131,
+    "sha256": "161705ab5eecb12516faccfbaadfb9d9627f184fc33db21017dfa5c6ba722345"
+  },
+  {
+    "file": "regression-tests.log",
+    "bytes": 3346,
+    "sha256": "d41c59a108e56f893f3528ceb93a049f45e9e4169911f186607ea9ff7be36184"
+  },
+  {
+    "file": "run-summary.log",
+    "bytes": 1791,
+    "sha256": "dd78bdc51cc45646122dde6b4f5647b59b987e72ab5ed715975162f45c2a1e45"
+  },
+  {
+    "file": "server-functional.log",
+    "bytes": 4823,
+    "sha256": "03bb5ec182544ac9b3e95b1ea76343184251fd44e28e9bcc53b4ddd0cd3f44e3"
+  },
+  {
+    "file": "server-load-20.log",
+    "bytes": 5357,
+    "sha256": "89e59b2a16f701fe75d01d433721d8fccb678f25e5d2921b8e26b2b0a216bd96"
+  },
+  {
+    "file": "server-load-5.log",
+    "bytes": 1253,
+    "sha256": "f5f13f43826d16c811dfc526dc86020bc9c3dd33aca1998709676c480c37bac6"
+  },
+  {
+    "file": "ui-history.json",
+    "bytes": 275,
+    "sha256": "be14fdace454e07f6eeae17c0f4e5289a6c0b6688fb14fc74c54f141d5d23017"
+  },
+  {
+    "file": "ui-upload-completed.png",
+    "bytes": 52345,
+    "sha256": "e46e236b68032e340be717a7bc45e5a378ea2babbd8b504479b7a084fa0cfc8a"
+  }
+]
