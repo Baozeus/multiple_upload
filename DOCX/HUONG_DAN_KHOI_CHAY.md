@@ -8,7 +8,6 @@ Tài liệu này tổng hợp các cách khởi chạy project từ **thư mục
 |---|---|---|
 | TCP Server | `Code/server.py` | Nhận file qua TCP và lưu vào filesystem |
 | Client PySide6 | `Code/ui-handoff/client/run.py` | Giao diện chính, dùng TCP mặc định |
-| Client Tkinter cũ | `Code/client.py` | Giao diện cũ để kiểm tra tương thích TCP |
 | HTTP Adapter | Tích hợp trong Client PySide6 | Kết nối tới HTTP Server cũ nếu có |
 | Mock transport | Tích hợp trong Client PySide6 | Xem và thử giao diện mà không cần Server |
 | Test suite | `Code/tests/` | Unit test và TCP smoke test |
@@ -159,31 +158,7 @@ python Code\ui-handoff\client\run.py
 
 HTTP Adapter gửi tới `base_url + upload_endpoint` và truyền chính sách file trùng bằng query `conflict`. Không dùng `Code/server.py` cho cách này vì `Code/server.py` là TCP Server, không phải HTTP Server.
 
-## 9. Cách 6 — Chạy Client Tkinter cũ
-
-Client cũ vẫn dùng TCP và mặc định không gửi field `conflict`; Server sẽ tương thích ngược và mặc định xử lý theo `rename`.
-
-Client này import `tkinterdnd2`. Nếu môi trường chưa có thư viện đó:
-
-```powershell
-python -m pip install tkinterdnd2
-```
-
-Chạy Server ở Terminal 1:
-
-```powershell
-python Code\server.py --host 127.0.0.1 --port 9000 --dir uploads
-```
-
-Chạy Client cũ ở Terminal 2:
-
-```powershell
-python Code\client.py
-```
-
-Lưu ý: `Code/requirements.txt` hiện chưa khai báo chính xác dependency `tkinterdnd2`; giao diện PySide6 mới vẫn là Client được khuyến nghị.
-
-## 10. Chạy test và smoke test
+## 9. Chạy test và smoke test
 
 Chạy toàn bộ bộ test từ thư mục gốc:
 
@@ -205,7 +180,7 @@ python -B -m unittest Code.tests.test_protocol_and_storage -v
 
 Bộ test không cần kết nối MySQL và không thay đổi database.
 
-## 11. Quy trình demo đề xuất
+## 10. Quy trình demo đề xuất
 
 1. Mở TCP Server bằng Cách 1.
 2. Mở Client PySide6.
@@ -218,7 +193,7 @@ Bộ test không cần kết nối MySQL và không thay đổi database.
 9. Mở lại Client để kiểm tra lịch sử JSON, tìm kiếm và lọc trạng thái.
 10. Kiểm tra file nhận được trong thư mục `uploads/`.
 
-## 12. Xử lý lỗi thường gặp
+## 11. Xử lý lỗi thường gặp
 
 ### `ModuleNotFoundError: No module named 'PySide6'`
 
@@ -231,10 +206,6 @@ python -m pip install -r Code\ui-handoff\client\requirements.txt
 ```powershell
 python -c "import PySide6; print(PySide6.__version__)"
 ```
-
-### `ModuleNotFoundError: No module named 'tkinterdnd2'`
-
-Lỗi này chỉ liên quan Client Tkinter cũ. Cài `tkinterdnd2` hoặc dùng Client PySide6 mới.
 
 ### Không kết nối được `127.0.0.1:9000`
 
@@ -259,7 +230,7 @@ Get-NetTCPConnection -LocalPort 9000 -State Listen
 - Đóng cửa sổ Client bình thường.
 - Tại Terminal chạy Server, nhấn `Ctrl+C` để dừng.
 
-## 13. Lệnh chạy nhanh nhất
+## 12. Lệnh chạy nhanh nhất
 
 Terminal 1:
 

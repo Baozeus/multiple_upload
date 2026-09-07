@@ -12,14 +12,13 @@ Source tổng được gom trong `Code/`:
 | `tests/` | Unit test và smoke test của luồng upload |
 | `mysql_database/` | Module MySQL bàn giao, không được bật trong runtime mặc định |
 
-Các file Python trực tiếp trong `Code/` là TCP Server, protocol dùng chung và Client Tkinter cũ.
+Các file Python trực tiếp trong `Code/` là TCP Server và protocol dùng chung.
 
 **Mô hình:** Client–Server đa luồng (multi-threaded).
 
 | Thành phần | Vai trò |
 |---|---|
 | `server.py` | Process riêng: lắng nghe TCP, mỗi client connection = 1 thread xử lý 1 file |
-| `client.py` | Process riêng: GUI Tkinter, hàng đợi file + tối đa 3 worker thread upload song song |
 | `protocol.py` | Framing chung (4-byte length + JSON) và validate |
 
 Demo bắt buộc chạy **hai process độc lập** (có thể trên cùng máy):
@@ -103,7 +102,6 @@ Code/
 ├── mysql_database/    # Module bàn giao, không bật mặc định
 ├── protocol.py        # Framing + validation chung
 ├── server.py          # Server đa luồng
-├── client.py          # GUI Tkinter cũ
 ├── requirements.txt
 └── README.md
 ```

@@ -1,1 +1,2 @@
-# Không cần thư viện ngoài (chỉ dùng Python stdlib: socket, threading, tkinter, tkinterdnd2)
+# TCP Server chỉ dùng Python standard library.
+# Dependency của Client nằm trong ui-handoff/client/requirements.txt.
