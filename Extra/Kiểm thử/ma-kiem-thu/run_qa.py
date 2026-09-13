@@ -32,11 +32,12 @@ from typing import Callable
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 SCRIPT_PATH = Path(__file__).resolve()
-CODE_ROOT = SCRIPT_PATH.parents[2]
 REPOSITORY_ROOT = SCRIPT_PATH.parents[3]
+CODE_ROOT = REPOSITORY_ROOT / "Code"
 CLIENT_ROOT = CODE_ROOT / "ui-handoff" / "client"
-sys.path.insert(0, str(CODE_ROOT))
-sys.path.insert(0, str(CLIENT_ROOT))
+for import_root in (REPOSITORY_ROOT, CODE_ROOT, CLIENT_ROOT):
+    if str(import_root) not in sys.path:
+        sys.path.insert(0, str(import_root))
 
 from protocol import recv_json, send_json  # noqa: E402
 from multiple_upload_client.config import ClientConfig  # noqa: E402
@@ -795,6 +796,13 @@ def _format_details(details: dict[str, object]) -> str:
     return json.dumps(details, ensure_ascii=False, separators=(", ", ": ")).replace("|", "\\|")
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return path.relative_to(REPOSITORY_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _write_report(
     path: Path,
     run_started: str,
@@ -894,7 +902,7 @@ def _write_report(
             "",
             "## Bằng chứng",
             "",
-            f"Thư mục bằng chứng: `{evidence_dir.relative_to(REPOSITORY_ROOT).as_posix()}`",
+            f"Thư mục bằng chứng: `{_display_path(evidence_dir)}`",
             "",
             "- `functional-results.json`: kết quả chi tiết từng case.",
             "- `regression-results.json` và `regression-tests.log`: kết quả 17 test có sẵn.",
@@ -916,17 +924,38 @@ def _write_report(
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def _write_manifest(evidence_dir: Path) -> None:
+def _write_manifest(evidence_dir: Path) -> Path:
     manifest: list[dict[str, object]] = []
+    manifest_path = evidence_dir / "manifest-sha256.json"
     for path in sorted(evidence_dir.iterdir(), key=lambda item: item.name):
-        if path.is_file() and path.name != "manifest-sha256.json":
+        if path.is_file() and path.name != manifest_path.name:
             manifest.append(
                 {"file": path.name, "bytes": path.stat().st_size, "sha256": _sha256(path)}
             )
-    (evidence_dir / "manifest-sha256.json").write_text(
+    manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    return manifest_path
+
+
+def _validate_manifest(evidence_dir: Path) -> None:
+    manifest_path = evidence_dir / "manifest-sha256.json"
+    if not manifest_path.is_file():
+        raise RuntimeError("Không tạo được manifest-sha256.json")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, list):
+        raise RuntimeError("Manifest không đúng định dạng danh sách.")
+    for item in manifest:
+        if not isinstance(item, dict) or not all(key in item for key in ("file", "bytes", "sha256")):
+            raise RuntimeError("Manifest có mục không hợp lệ.")
+        path = evidence_dir / str(item["file"])
+        if not path.is_file():
+            raise RuntimeError(f"Manifest trỏ tới file không tồn tại: {item['file']}")
+        if path.stat().st_size != int(item["bytes"]):
+            raise RuntimeError(f"Sai kích thước evidence: {item['file']}")
+        if _sha256(path) != str(item["sha256"]):
+            raise RuntimeError(f"Sai SHA-256 evidence: {item['file']}")
 
 
 def _parse_arguments() -> argparse.Namespace:
@@ -1015,6 +1044,7 @@ def main() -> int:
         encoding="utf-8",
     )
     _write_manifest(evidence_dir)
+    _validate_manifest(evidence_dir)
 
     functional_ok = all(result.status == "PASS" for result in functional)
     regression_ok = regression["status"] == "PASS"
