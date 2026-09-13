@@ -1,65 +1,229 @@
-# multiple_upload
+# UDM_10 — Multiple Upload
 
-## Thành viên : 
-* Người 1 : Nguyễn Tấn Bão 
-* Người 2 : Nguyễn Phi Long 
-* Người 3 : Nguyễn Viết Thịnh 
-* Người 4 : Nguyễn Đặng Xuân Phát 
-* Người 5 : Phạm Trần Đức Phú 
-* Người 6 : Phạm Ngọc Phú 
-## Ngôn ngữ : 
-* Python
-### KẾ HOẠCH PHÂN BỐ NHÂN SỰ DỰ ÁN
-UDM_10 — Upload nhiều file
-1. Thông tin dự án
-Project Code: UDM_10
-Mô tả: Ứng dụng GUI cho phép kéo thả và upload nhiều file lên Server.
-Số thành viên thực hiện: 6
-2. Tóm tắt yêu cầu cốt lõi
--Kéo-thả một hoặc nhiều file vào khu vực upload trên GUI
-- Mỗi file có trạng thái riêng: chờ → đang tải → hoàn tất / lỗi
-- Hiển thị tốc độ và tiến trình (%) riêng cho từng file
-- Hỗ trợ hàng đợi hoặc upload đồng thời có giới hạn số file cùng lúc
-- Lỗi của một file không được làm dừng các file còn lại
-- Có quy tắc xử lý file trùng tên trên Server
-- Không bắt buộc Pause/Resume (tránh trùng phạm vi với UDM_12)
-#  Lộ trình dự án (4 Tuần)
+Ứng dụng desktop Python cho phép **kéo-thả/chọn nhiều file và upload lên Server qua TCP**, có hàng đợi FIFO, giới hạn số file upload đồng thời, hiển thị tiến trình/tốc độ riêng cho từng file và xử lý file trùng tên.
 
-### Tuần 1 — Phân tích & Thiết kế
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Vẽ sơ đồ kiến trúc hệ thống, thiết kế API, setup project skeleton |
-| **TV2** | Thiết kế state machine cho file, phác thảo UI progress bar |
-| **TV3** | Chọn công nghệ server, setup server rỗng, test nhận 1 file đơn giản |
-| **TV4** | Nghiên cứu cơ chế hàng đợi, viết pseudo-code |
-| **TV5** | Đề xuất quy tắc trùng tên |
-| **TV6** | Soạn checklist test case dựa trên 7 yêu cầu trong đề bài |
+## 1. Thành viên
 
-### Tuần 2 — Phát triển module riêng lẻ
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Code vùng kéo-thả hoạt động được, hỗ trợ chọn nhiều file cùng lúc |
-| **TV2** | Code progress bar + hiển thị % và tốc độ cho từng dòng file riêng biệt |
-| **TV3** | Hoàn thiện API nhận file thật, lưu đúng thư mục, trả JSON kết quả |
-| **TV4** | Code logic hàng đợi hoạt động: khi vượt giới hạn file cùng lúc thì file mới phải ở trạng thái "chờ" |
-| **TV5** | Code xử lý trùng tên trên server + đảm bảo lỗi của 1 file không làm dừng tiến trình các file khác |
-| **TV6** | Bắt đầu test từng module riêng lẻ khi các bạn hoàn thành, ghi log lỗi để báo lại |
+- Nguyễn Tấn Bão
+- Nguyễn Phi Long
+- Nguyễn Viết Thịnh
+- Nguyễn Đặng Xuân Phát
+- Phạm Trần Đức Phú
+- Phạm Ngọc Phú
 
-### Tuần 3 — Tích hợp & Kiểm thử
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **TV1** | Ghép giao diện kéo-thả với module trạng thái (TV2) thành một luồng UI hoàn chỉnh |
-| **TV2** | Kết nối tiến trình thực tế từ server (TV3) để progress bar chạy đúng dữ liệu thật |
-| **TV3** | Phối hợp TV4, TV5 để server xử lý đúng: nhận đồng thời có giới hạn + xử lý trùng tên |
-| **TV4** | Test cơ chế hàng đợi với nhiều file thật |
-| **TV5** | Test tình huống lỗi: ngắt mạng giữa chừng, file trùng tên, file quá lớn — đảm bảo các file khác vẫn tiếp tục |
-| **TV6** | Chạy full test case theo checklist, lập bảng lỗi (bug list) gửi từng người sửa |
+## 2. Công nghệ
 
-### Tuần 4 — Hoàn thiện & Báo cáo
-| Thành viên | Việc cần làm |
-| :---: | :--- |
-| **Tất cả** | Sửa lỗi theo bug list của TV6, tối ưu UI/UX |
-| **TV1** | Chốt bản demo cuối, kiểm tra kiến trúc tổng thể |
-| **TV6** | Viết báo cáo dự án + làm slide thuyết trình, tổng hợp đóng góp từng thành viên |
-| **Cả nhóm** | Diễn tập demo (kéo nhiều file, show từng trạng thái, show 1 file lỗi không ảnh hưởng file khác, show xử lý trùng tên) |
+- Python 3.10+
+- PySide6: giao diện Client
+- TCP Socket: giao tiếp Client–Server
+- Python Standard Library: Server, protocol và xử lý file
+- unittest: kiểm thử
+- Filesystem: nơi Server lưu file
+- MySQL: module bàn giao riêng, **không dùng trong runtime mặc định**
 
+## 3. Kiến trúc thực tế
+
+```text
++------------------------- CLIENT --------------------------+
+| PySide6 GUI                                                |
+|  Kéo thả / Chọn file                                      |
+|          |                                                 |
+|          v                                                 |
+| UploadCoordinator                                          |
+|          |                                                 |
+|          v                                                 |
+| UploadQueue (FIFO, max_concurrent mặc định = 3)           |
+|      |          |          |                               |
+|   Worker 1   Worker 2   Worker 3                           |
+|      |          |          |                               |
+|      +----------+----------+---- TCP, 1 socket / file ----+---->
++------------------------------------------------------------+    |
+                                                                    |
+                         MẠNG TCP                                 |
+                                                                    |
+<------------------------------------------------------------------+
+|                      SERVER Python                              |
+|  socket.listen(32) -> mỗi connection = 1 thread                  |
+|          |                                                       |
+|          v                                                       |
+|  protocol: 4-byte length + JSON                                 |
+|          |                                                       |
+|          v                                                       |
+|  validate -> xử lý trùng tên -> file .part -> commit             |
+|          |                                                       |
+|          v                                                       |
+|                      uploads/                                   |
++------------------------------------------------------------------+
+```
+
+**Lưu ý:** giới hạn `N = 3` hiện được thực thi ở **Client Queue**. Server hiện chấp nhận nhiều connection và tạo một thread cho mỗi connection; Server không có limiter N=3 riêng.
+
+## 4. Luồng upload
+
+1. Người dùng kéo-thả hoặc chọn nhiều file.
+2. Client tạo `UploadItem` và đưa vào queue.
+3. Queue lấy file theo thứ tự FIFO.
+4. Khi còn slot, Coordinator tạo worker upload.
+5. Mỗi file mở **một TCP connection riêng**.
+6. Client gửi header JSON rồi gửi dữ liệu nhị phân theo chunk.
+7. Server kiểm tra tên, định dạng, kích thước và chính sách trùng tên.
+8. Server ghi dữ liệu vào file tạm `.part`.
+9. Khi nhận đủ dữ liệu, Server commit file và trả `SUCCESS`.
+10. Client cập nhật `COMPLETED`; nếu lỗi chỉ file đó chuyển `ERROR`, sau đó queue cấp slot cho file tiếp theo.
+
+## 5. State machine
+
+```text
+WAITING
+   |
+   | được cấp slot
+   v
+UPLOADING --------------------+
+   |                           |
+   | SUCCESS                   | lỗi / timeout / mất kết nối
+   v                           v
+COMPLETED                    ERROR
+```
+
+## 6. Quy tắc file
+
+- Định dạng: `.txt`, `.pdf`, `.jpg`, `.jpeg`, `.doc`, `.docx`
+- Kích thước tối đa: 10 GB/file
+- Tên file được kiểm tra để tránh path traversal
+- Trùng tên:
+  - `rename`: `file.txt` -> `file(1).txt` -> `file(2).txt`...
+  - `overwrite`: ghi đè file đích
+  - `skip`: bỏ qua file đã tồn tại
+- Upload lỗi không làm dừng các file khác.
+- File chưa hoàn thành không được commit thành file đích; dữ liệu tạm dùng đuôi `.part`.
+
+## 7. TCP Protocol
+
+Chi tiết xem `Code/PROTOCOL.md`.
+
+Tóm tắt:
+
+```text
+Client -> Server
+[4 byte big-endian length][JSON header][binary file data]
+
+Server -> Client
+[4 byte big-endian length][JSON response]
+```
+
+Header:
+
+```json
+{
+  "filename": "tailieu.pdf",
+  "filesize": 102400,
+  "conflict": "rename"
+}
+```
+
+Phản hồi mở đầu:
+
+```json
+{"status": "OK", "saved_as": "tailieu.pdf"}
+```
+
+Phản hồi thành công:
+
+```json
+{"status": "SUCCESS", "saved_as": "tailieu.pdf", "bytes": 102400}
+```
+
+## 8. Cấu trúc thư mục
+
+```text
+multiple_upload-main/
+├── README.md
+├── Code/
+│   ├── server.py
+│   ├── protocol.py
+│   ├── upload_handler.py
+│   ├── duplicate_handler.py
+│   ├── requirements.txt
+│   ├── PROTOCOL.md
+│   ├── tests/
+│   ├── ui-handoff/
+│   │   └── client/
+│   │       ├── run.py
+│   │       ├── requirements.txt
+│   │       └── multiple_upload_client/
+│   │           ├── main_window.py
+│   │           ├── queue_manager.py
+│   │           ├── uploader.py
+│   │           ├── tcp_transport.py
+│   │           ├── config.py
+│   │           ├── models.py
+│   │           └── ...
+│   └── mysql_database/
+├── DOCX/
+│   ├── UDM_10_Bao_cao_cap_nhat.docx
+│   └── HUONG_DAN_KHOI_CHAY.md
+├── PPTX/
+└── Extra/
+```
+
+## 9. Cài đặt và chạy
+
+Yêu cầu Windows 10/11 và Python 3.10+.
+
+Từ thư mục gốc:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r Code\ui-handoff\client\requirements.txt
+```
+
+Nếu PowerShell chặn kích hoạt môi trường:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r Code\ui-handoff\client\requirements.txt
+```
+
+### Terminal 1 — Server
+
+```powershell
+python Code\server.py --host 127.0.0.1 --port 9000 --dir uploads
+```
+
+### Terminal 2 — Client
+
+```powershell
+python Code\ui-handoff\client\run.py
+```
+
+Client mặc định dùng:
+
+- TCP
+- `127.0.0.1:9000`
+- tối đa 3 file upload đồng thời
+- conflict policy `rename`
+
+## 10. Kiểm thử
+
+```powershell
+python -B -m unittest discover -s Code\tests -v
+```
+
+TCP smoke test:
+
+```powershell
+python -B -m unittest Code.tests.test_tcp_smoke -v
+```
+
+Protocol/storage:
+
+```powershell
+python -B -m unittest Code.tests.test_protocol_and_storage -v
+```
+
+## 11. Ghi chú quan trọng
+
+Kiến trúc trong bản cập nhật này được đồng bộ theo **source code hiện tại**: Client là **PySide6 + TCP**, không phải Tkinter + Flask/HTTP. HTTP Adapter vẫn tồn tại trong Client để tương thích cấu hình cũ, nhưng không phải đường chạy mặc định và repository không kèm HTTP Server tương ứng.
+
+MySQL nằm trong module `Code/mysql_database/` và không được khởi động trong demo TCP mặc định.
