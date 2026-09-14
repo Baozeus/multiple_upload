@@ -193,6 +193,7 @@ class UploadCoordinator(QObject):
             item.conflict_result = "Bỏ qua"
             terminal_status = "Bỏ qua"
         else:
+            item.saved_name = result.saved_as
             item.detail = f"Server đã lưu thành “{result.saved_as}”"
             terminal_status = UploadStatus.COMPLETED.value
         self.item_updated.emit(item.id)

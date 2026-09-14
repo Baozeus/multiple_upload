@@ -20,6 +20,7 @@ class UploadStatus(str, Enum):
 class UploadItem:
     path: Path
     id: str = field(default_factory=lambda: uuid4().hex)
+    saved_name: str | None = None
     status: UploadStatus = UploadStatus.WAITING
     progress: int = 0
     speed: str = "—"
@@ -34,7 +35,7 @@ class UploadItem:
 
     @property
     def name(self) -> str:
-        return self.path.name
+        return self.saved_name or self.path.name
 
     @property
     def size(self) -> int:

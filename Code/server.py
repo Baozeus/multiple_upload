@@ -27,6 +27,7 @@ class FileUploadServer:
         self.upload_dir = upload_dir
         self.sock = None
         self.running = True
+        self.upload_limit = threading.Semaphore(3)
         if not os.path.exists(self.upload_dir):
             os.makedirs(self.upload_dir)
 
@@ -60,15 +61,28 @@ class FileUploadServer:
     def handle_client(self, conn, addr):
         peer = "{}:{}".format(addr[0], addr[1])
         print("[SERVER] Connected: " + peer)
+        if not self.upload_limit.acquire(blocking=False):
+            print("[SERVER] REJECT {}: Đã đủ 3 file đang upload".format(peer))
 
+            try:
+                send_json(conn, {
+                    "status": "REJECTED",
+                    "message": "Server chỉ nhận tối đa 3 file cùng lúc."
+                })
+            except Exception:
+                pass
+
+            conn.close()
+            return
+    
         try:
             conn.settimeout(DEFAULT_TIMEOUT)
-            
-    
+
             try:
                 header = recv_json(conn)
             except Exception as e:
                 send_json(conn, {"status": "ERROR", "message": "Header loi: " + str(e)})
+                self.upload_limit.release()
                 return
 
             try:
@@ -144,6 +158,7 @@ class FileUploadServer:
                 pass
 
         finally:
+            self.upload_limit.release()
             try:
                 conn.shutdown(socket.SHUT_RDWR)
             except OSError:
