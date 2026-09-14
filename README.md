@@ -23,38 +23,7 @@
 
 ## 3. Kiến trúc thực tế
 
-```text
-+------------------------- CLIENT --------------------------+
-| PySide6 GUI                                                |
-|  Kéo thả / Chọn file                                      |
-|          |                                                 |
-|          v                                                 |
-| UploadCoordinator                                          |
-|          |                                                 |
-|          v                                                 |
-| UploadQueue (FIFO, max_concurrent mặc định = 3)           |
-|      |          |          |                               |
-|   Worker 1   Worker 2   Worker 3                           |
-|      |          |          |                               |
-|      +----------+----------+---- TCP, 1 socket / file ----+---->
-+------------------------------------------------------------+    |
-                                                                    |
-                         MẠNG TCP                                 |
-                                                                    |
-<------------------------------------------------------------------+
-|                      SERVER Python                              |
-|  socket.listen(32) -> mỗi connection = 1 thread                  |
-|          |                                                       |
-|          v                                                       |
-|  protocol: 4-byte length + JSON                                 |
-|          |                                                       |
-|          v                                                       |
-|  validate -> xử lý trùng tên -> file .part -> commit             |
-|          |                                                       |
-|          v                                                       |
-|                      uploads/                                   |
-+------------------------------------------------------------------+
-```
+<img width="1162" height="522" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/55bf1173-e9b5-4b05-8805-4970a5850723" />
 
 **Lưu ý:** giới hạn `N = 3` hiện được thực thi ở **Client Queue**. Server hiện chấp nhận nhiều connection và tạo một thread cho mỗi connection; Server không có limiter N=3 riêng.
 
@@ -73,17 +42,7 @@
 
 ## 5. State machine
 
-```text
-WAITING
-   |
-   | được cấp slot
-   v
-UPLOADING --------------------+
-   |                           |
-   | SUCCESS                   | lỗi / timeout / mất kết nối
-   v                           v
-COMPLETED                    ERROR
-```
+<img width="392" height="312" alt="1" src="https://github.com/user-attachments/assets/bf3c94a2-0e7d-4eff-ad0a-1ad6c2793726" />
 
 ## 6. Quy tắc file
 
