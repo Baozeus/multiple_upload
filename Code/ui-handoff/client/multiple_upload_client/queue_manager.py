@@ -25,13 +25,9 @@ class UploadQueue:
 
     def add_paths(self, paths: Iterable[str | Path]) -> list[UploadItem]:
         self.rejected = []
-        existing = {item.path.resolve() for item in self.items.values()}
         added: list[UploadItem] = []
         for raw_path in paths:
             path = Path(raw_path).resolve()
-            if path in existing:
-                self.rejected.append((path, "Tệp đã có trong danh sách."))
-                continue
             if not path.is_file():
                 self.rejected.append((path, "Không tìm thấy tệp hoặc đường dẫn không hợp lệ."))
                 continue
@@ -50,7 +46,6 @@ class UploadQueue:
                 continue
             item = UploadItem(path=path)
             self.items[item.id] = item
-            existing.add(path)
             added.append(item)
         return added
 
