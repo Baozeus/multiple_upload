@@ -265,13 +265,8 @@ class MainWindow(QMainWindow):
         footer_layout.setContentsMargins(14, 8, 12, 8)
         self.footer_summary = QLabel()
         self.footer_summary.setObjectName("sectionMeta")
-        footer_note = QLabel(
-            f"FIFO · tối đa {self.coordinator.queue.max_concurrent} tệp cùng lúc"
-        )
-        footer_note.setObjectName("sectionMeta")
         footer_layout.addWidget(self.footer_summary)
         footer_layout.addStretch()
-        footer_layout.addWidget(footer_note)
         panel_layout.addWidget(footer)
         return panel
 
@@ -386,6 +381,7 @@ class MainWindow(QMainWindow):
         self.coordinator.duplicate_found.connect(self._show_conflict_dialog)
         self.coordinator.mode_changed.connect(self._set_connection_mode)
         self.coordinator.notification.connect(self._show_notification)
+        self.coordinator.rejected_files.connect(self._show_rejected_files)
         self.coordinator.item_terminal.connect(self._record_history)
         QTimer.singleShot(0, self._set_initial_connection_mode)
 
@@ -598,3 +594,17 @@ class MainWindow(QMainWindow):
 
     def _show_notification(self, message: str) -> None:
         self.statusBar().showMessage(message, 4500)
+
+    def _show_rejected_files(self, rejected: object) -> None:
+        items = list(rejected)
+        if not items:
+            return
+        lines = [
+            f"• {path.name}: {reason}"
+            for path, reason in items
+        ]
+        QMessageBox.warning(
+            self,
+            "Tệp không được thêm",
+            "Các tệp sau không thể đưa vào danh sách upload:\n\n" + "\n".join(lines),
+        )
