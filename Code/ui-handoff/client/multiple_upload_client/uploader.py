@@ -30,6 +30,7 @@ class UploadCoordinator(QObject):
     queue_changed = Signal()
     mode_changed = Signal(str)
     notification = Signal(str)
+    rejected_files = Signal(object)
     item_terminal = Signal(object, str)
     tcp_progress = Signal(str, int, float)
     tcp_finished = Signal(str, object)
@@ -60,14 +61,18 @@ class UploadCoordinator(QObject):
             self.item_added.emit(item.id)
         if added:
             self.notification.emit(f"Đã thêm {len(added)} tệp vào danh sách.")
-        elif paths:
-            reason = self.queue.rejected[0][1] if self.queue.rejected else "Tệp không hợp lệ."
-            self.notification.emit(f"Không thể thêm tệp: {reason}")
-        if added and self.queue.rejected:
-            self.notification.emit(
-                f"Đã bỏ qua {len(self.queue.rejected)} tệp không hợp lệ. "
-                f"{self.queue.rejected[0][1]}"
-            )
+        if self.queue.rejected:
+            self.rejected_files.emit(list(self.queue.rejected))
+            if not added:
+                self.notification.emit(
+                    f"Không thể thêm {len(self.queue.rejected)} tệp. Xem chi tiết lỗi trên hộp thoại."
+                )
+            else:
+                self.notification.emit(
+                    f"Đã bỏ qua {len(self.queue.rejected)} tệp không hợp lệ. Xem chi tiết lỗi trên hộp thoại."
+                )
+        elif paths and not added:
+            self.notification.emit("Không thể thêm tệp: Tệp không hợp lệ.")
         self.queue_changed.emit()
         self._pump_queue()
 
