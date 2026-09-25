@@ -1,0 +1,411 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" modified="2026-09-25T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram name="1 - Tổng quan kiến trúc" id="udm10-page-1">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;UDM_10 — TỔNG QUAN KIẾN TRÚC&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5B6975&quot;&gt;Đường chạy mặc định: PySide6 Client → TCP Socket Server → Filesystem&lt;/font&gt;" style="html=1;whiteSpace=wrap;strokeColor=#FFFFFF;fillColor=#FFFFFF;fontColor=#17324D;fontSize=24;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="25" width="1720" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="client_zone" value="&lt;b&gt;PROCESS CLIENT DESKTOP&lt;/b&gt;&lt;br&gt;Python 3 + PySide6" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=18;rounded=1;arcSize=12;strokeWidth=2;verticalAlign=top;spacingTop=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="650" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="server_zone" value="&lt;b&gt;PROCESS SERVER&lt;/b&gt;&lt;br&gt;Python TCP Socket" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=18;rounded=1;arcSize=12;strokeWidth=2;verticalAlign=top;spacingTop=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="990" y="110" width="760" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="tcp_zone" value="&lt;b&gt;TCP&lt;/b&gt;&lt;br&gt;1 kết nối riêng / file" style="html=1;whiteSpace=wrap;strokeColor=#17324D;fillColor=#FFFFFF;fontColor=#17324D;fontSize=17;ellipse;strokeWidth=3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="725" y="285" width="225" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="gui" value="&lt;b&gt;PySide6 GUI&lt;/b&gt;&lt;br&gt;Chọn / kéo thả file&lt;br&gt;Bảng tác vụ · tiến độ · tốc độ · trạng thái" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="180" width="270" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="validation" value="&lt;b&gt;Validation phía Client&lt;/b&gt;&lt;br&gt;Định dạng · dung lượng · tối đa 6 file hợp lệ/lần" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="390" y="180" width="250" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="queue" value="&lt;b&gt;FIFO UploadQueue&lt;/b&gt;&lt;br&gt;Tối đa 3 item ở trạng thái Đang tải&lt;br&gt;Item còn lại: Chờ" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="355" width="270" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="workers" value="&lt;b&gt;Worker TCP&lt;/b&gt;&lt;br&gt;thread nền / file&lt;br&gt;Signal/slot cập nhật GUI" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="390" y="355" width="250" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="endpoint" value="&lt;b&gt;Endpoint cấu hình&lt;/b&gt;&lt;br&gt;IP / port 1–65535&lt;br&gt;Khóa khi còn Chờ hoặc Đang tải" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="535" width="270" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="health" value="&lt;b&gt;Kiểm tra kết nối&lt;/b&gt;&lt;br&gt;health_check → HEALTHY&lt;br&gt;Không dùng slot upload" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="390" y="535" width="250" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="history" value="&lt;b&gt;Lịch sử JSON cục bộ&lt;/b&gt;&lt;br&gt;%LOCALAPPDATA%/UDM_10/upload_history.json&lt;br&gt;Ghi kết quả terminal" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=13;shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="705" width="560" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="listener" value="&lt;b&gt;TCP Listener&lt;/b&gt;&lt;br&gt;bind host/port · listen(32)&lt;br&gt;1 thread / connection" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="180" width="250" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="server_validation" value="&lt;b&gt;Protocol &amp; Validation&lt;/b&gt;&lt;br&gt;4-byte length + UTF-8 JSON&lt;br&gt;tên · đuôi · ≤ 512.000 byte" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="180" width="370" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="semaphore" value="&lt;b&gt;BoundedSemaphore(3)&lt;/b&gt;&lt;br&gt;Hết slot → REJECTED&lt;br&gt;Thread kết nối ≠ upload đang hoạt động" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="355" width="250" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="duplicate" value="&lt;b&gt;Reservation &amp; trùng tên&lt;/b&gt;&lt;br&gt;ask · rename · overwrite · skip&lt;br&gt;khóa đích chống race nội bộ" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="355" width="370" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="write" value="&lt;b&gt;Lưu theo luồng&lt;/b&gt;&lt;br&gt;Server đọc 4 KiB/lần&lt;br&gt;ghi .udm10-upload-*.part" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="535" width="250" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="commit" value="&lt;b&gt;Commit &amp; phản hồi&lt;/b&gt;&lt;br&gt;os.replace(file tạm, file đích)&lt;br&gt;SUCCESS {saved_as, bytes}" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=14;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="535" width="370" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="filesystem" value="&lt;b&gt;FILESYSTEM&lt;/b&gt;&lt;br&gt;Mặc định: Code/uploads/ hoặc --dir&lt;br&gt;File vật lý, không lưu BLOB" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=14;shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="705" width="360" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="&lt;b&gt;MySQL 8 module&lt;/b&gt;&lt;br&gt;Metadata/history tùy chọn&lt;br&gt;&lt;b&gt;Chưa nối runtime mặc định&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#7555A5;fillColor=#F1ECFA;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=8 6;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="705" width="270" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="limits" value="&lt;b&gt;GIỚI HẠN ĐÃ XÁC MINH&lt;/b&gt;   6 file hợp lệ / lần thêm   ·   3 upload đồng thời   ·   500 KiB / file   ·   .txt  .pdf  .jpg  .jpeg  .doc  .docx" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=15;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="900" width="1710" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="&lt;b&gt;Chú giải&lt;/b&gt;  Nét liền: luồng chính / request   ·   Nét đứt: phản hồi hoặc module tùy chọn   ·   TCP là canonical; HTTP/mock chỉ là nhánh legacy cấu hình" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#FFFFFF;fontColor=#17324D;fontSize=12;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="990" width="1710" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="đường dẫn file" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="gui" target="validation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="file hợp lệ" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="validation" target="queue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="cấp tối đa 3 slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="queue" target="workers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="header + binary payload" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="workers" target="tcp_zone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="TCP tới IP:port" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="tcp_zone" target="listener">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="recv header" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="listener" target="server_validation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="upload hợp lệ" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="server_validation" target="semaphore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="đã lấy slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="semaphore" target="duplicate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="OK + saved_as" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="duplicate" target="write">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="đủ payload" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="write" target="commit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="file đích" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="commit" target="filesystem">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="SUCCESS / ERROR" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="commit" target="tcp_zone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="ACK cuối" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="tcp_zone" target="workers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="Qt signals" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="workers" target="gui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="terminal event" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="gui" target="history">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" value="bấm kiểm tra" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="endpoint" target="health">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" value="health_check" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="health" target="tcp_zone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" value="không có đường gọi runtime" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7555A5;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="server_validation" target="mysql">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2 - Luồng upload và phản hồi" id="udm10-page-2">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1220" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;LUỒNG UPLOAD VÀ PHẢN HỒI&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5B6975&quot;&gt;Sequence thực tế của transport TCP canonical; các nhánh lỗi được giữ riêng&lt;/font&gt;" style="html=1;whiteSpace=wrap;strokeColor=#FFFFFF;fillColor=#FFFFFF;fontColor=#17324D;fontSize=24;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="25" width="1820" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="gui" value="&lt;b&gt;GUI PySide6&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=16;rounded=1;arcSize=14;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="gui_life" value="" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=1;shape=line;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="193" y="172" width="4" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="queue" value="&lt;b&gt;Queue / Worker&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=16;rounded=1;arcSize=14;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="110" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="queue_life" value="" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=1;shape=line;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="543" y="172" width="4" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="server" value="&lt;b&gt;TCP Server&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=16;rounded=1;arcSize=14;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="110" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="server_life" value="" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=1;shape=line;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="933" y="172" width="4" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="fs" value="&lt;b&gt;Filesystem&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=16;rounded=1;arcSize=14;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="110" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="fs_life" value="" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#FFFFFF;fontColor=#17324D;fontSize=1;shape=line;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1323" y="172" width="4" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="history" value="&lt;b&gt;JSON History&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=16;rounded=1;arcSize=14;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="110" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="history_life" value="" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#FFFFFF;fontColor=#17324D;fontSize=1;shape=line;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1673" y="172" width="4" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" value="1  Chọn / kéo thả nhiều file" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="205" width="230" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" value="2  Validate: tồn tại · đuôi · ≤500 KiB · tối đa 6 hợp lệ" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="275" width="300" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="rejected" value="Không hợp lệ / vượt file thứ 6&lt;br&gt;&lt;b&gt;Từ chối, không tạo UploadItem&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="55" y="345" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="fifo" value="3  Tạo UploadItem → Chờ&lt;br&gt;FIFO cấp tối đa 3 slot" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="425" width="300" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="connect" value="4  Worker chụp host:port&lt;br&gt;Mở 1 TCP connection / file" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="510" width="300" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="header" value="5  [4 byte length][UTF-8 JSON]&lt;br&gt;{filename, filesize, conflict}" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="510" width="300" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="server_busy" value="Hết semaphore slot&lt;br&gt;&lt;b&gt;REJECTED&lt;/b&gt; và đóng socket" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="815" y="605" width="310" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="duplicate_branch" value="Tên đã tồn tại&lt;br&gt;ask → DUPLICATE&lt;br&gt;skip → SKIPPED" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="815" y="690" width="310" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="dialog" value="DUPLICATE → GUI mở dialog&lt;br&gt;rename / overwrite → thử lại&lt;br&gt;skip → Bỏ qua cục bộ" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="55" y="690" width="300" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="accepted" value="6  OK {saved_as}&lt;br&gt;Server đã reserve đích + file .part" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="795" width="300" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="payload" value="7  Gửi binary theo chunk ≤64 KiB&lt;br&gt;progress theo byte + monotonic time" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="795" width="300" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="write_part" value="8  Server recv tối đa 4 KiB/lần&lt;br&gt;ghi file tạm .part" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1205" y="795" width="250" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="wait_ack" value="9  Đã gửi đủ byte&lt;br&gt;&lt;b&gt;Đang tải · 99%&lt;/b&gt;&lt;br&gt;Đang chờ Server xác nhận" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="900" width="300" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="commit" value="10  Đóng file tạm → os.replace&lt;br&gt;vào file đích" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1205" y="900" width="250" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="success" value="11  SUCCESS {saved_as, bytes}" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1000" width="300" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="complete" value="12  Hoàn tất 100%&lt;br&gt;hiển thị saved_as" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="55" y="1000" width="300" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="history_write" value="13  upsert terminal outcome&lt;br&gt;Hoàn tất / Lỗi / Bỏ qua" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1555" y="1000" width="270" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="error_note" value="&lt;b&gt;Lỗi / timeout / mất kết nối&lt;/b&gt;&lt;br&gt;ERROR nếu còn gửi được · xóa .part · đóng socket · giải phóng semaphore đúng một lần · file kế tiếp được bơm từ queue" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1110" width="1080" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="paths" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="reject" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="step2" target="rejected">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="accepted" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="step2" target="fifo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="fifo" target="connect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="TCP header" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="connect" target="header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="nếu đủ 3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#C06B20;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="header" target="server_busy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" value="nếu trùng" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#C06B20;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="header" target="duplicate_branch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" value="DUPLICATE" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#C06B20;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="duplicate_branch" target="dialog">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9" value="hợp lệ + có slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="header" target="accepted">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s10" value="OK" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="accepted" target="payload">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s11" value="binary stream" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="payload" target="write_part">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s12" value="đã gửi đủ byte" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="write_part" target="wait_ack">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s13" value="đủ filesize" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="write_part" target="commit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s14" value="commit xong" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="commit" target="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s15" value="ACK cuối" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="success" target="complete">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s16" value="item_terminal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="complete" target="history_write">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s17" value="worker nhận lỗi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="server_busy" target="error_note">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s18" value="exception" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="write_part" target="error_note">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3 - Trạng thái và xử lý ngoại lệ" id="udm10-page-3">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;TRẠNG THÁI VÀ XỬ LÝ NGOẠI LỆ&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#5B6975&quot;&gt;Enum UploadStatus, chi tiết chờ ACK, duplicate flow và health-check&lt;/font&gt;" style="html=1;whiteSpace=wrap;strokeColor=#FFFFFF;fillColor=#FFFFFF;fontColor=#17324D;fontSize=24;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="25" width="1720" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="upload_lane" value="&lt;b&gt;VÒNG ĐỜI TÁC VỤ UPLOAD&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#EAF3FB;fontColor=#17324D;fontSize=18;rounded=1;arcSize=12;strokeWidth=2;verticalAlign=top;spacingTop=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="115" width="1100" height="650" as="geometry" />
+        </mxCell>
+        <mxCell id="invalid" value="Bị từ chối trước queue&lt;br&gt;&lt;b&gt;Không tạo UploadItem&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="75" y="190" width="220" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="waiting" value="&lt;b&gt;Chờ&lt;/b&gt;&lt;br&gt;WAITING" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=15;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="190" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="uploading" value="&lt;b&gt;Đang tải&lt;/b&gt;&lt;br&gt;UPLOADING" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=15;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="190" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="ack_detail" value="&lt;b&gt;Đang chờ Server xác nhận&lt;/b&gt;&lt;br&gt;Vẫn là UPLOADING · progress 99%&lt;br&gt;&lt;i&gt;Không phải enum riêng&lt;/i&gt;" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="620" y="340" width="240" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="completed" value="&lt;b&gt;Hoàn tất&lt;/b&gt;&lt;br&gt;COMPLETED · 100%" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=15;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="910" y="190" width="190" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="duplicate" value="Tên trùng cần quyết định&lt;br&gt;&lt;b&gt;WAITING + conflict_pending&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=5 4;" vertex="1" parent="1">
+          <mxGeometry x="350" y="500" width="260" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="skipped" value="&lt;b&gt;Bỏ qua&lt;/b&gt;&lt;br&gt;SKIPPED" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=15;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="75" y="500" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="failed" value="&lt;b&gt;Lỗi&lt;/b&gt;&lt;br&gt;ERROR" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=15;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="875" y="500" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="retry" value="Nút &lt;b&gt;Thử lại&lt;/b&gt;&lt;br&gt;reset_for_retry()" style="html=1;whiteSpace=wrap;strokeColor=#2563A7;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="650" y="620" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="resource" value="&lt;b&gt;Luôn dọn tài nguyên&lt;/b&gt;&lt;br&gt;abort reservation/.part nếu cần · giảm active_uploads · release semaphore · shutdown/close socket · bơm file kế tiếp" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#F3F6F8;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="75" y="690" width="1010" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="health_lane" value="&lt;b&gt;KIỂM TRA KẾT NỐI THEO YÊU CẦU&lt;/b&gt;&lt;br&gt;Không phải giám sát liên tục · không chiếm semaphore upload" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=17;rounded=1;arcSize=12;strokeWidth=2;verticalAlign=top;spacingTop=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="115" width="570" height="650" as="geometry" />
+        </mxCell>
+        <mxCell id="untested" value="&lt;b&gt;Chưa kiểm tra&lt;/b&gt;&lt;br&gt;untested" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="205" width="180" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="checking" value="&lt;b&gt;Đang kiểm tra&lt;/b&gt;&lt;br&gt;checking" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="205" width="180" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="healthy" value="&lt;b&gt;Sẵn sàng&lt;/b&gt;&lt;br&gt;HEALTHY + can_accept=true" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#EAF6EE;fontColor=#17324D;fontSize=12;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="350" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="busy" value="&lt;b&gt;Bận&lt;/b&gt;&lt;br&gt;HEALTHY + can_accept=false" style="html=1;whiteSpace=wrap;strokeColor=#C06B20;fillColor=#FFF1E6;fontColor=#17324D;fontSize=12;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="350" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="offline" value="&lt;b&gt;Offline&lt;/b&gt;&lt;br&gt;connection failure" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=12;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="500" width="150" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="timeout" value="&lt;b&gt;Timeout&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=12;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="500" width="130" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="protocol_error" value="&lt;b&gt;Sai protocol&lt;/b&gt;" style="html=1;whiteSpace=wrap;strokeColor=#B53A3A;fillColor=#FDECEC;fontColor=#17324D;fontSize=12;ellipse;strokeWidth=2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="500" width="160" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="endpoint_change" value="Đổi IP/port → tăng revision&lt;br&gt;bỏ kết quả probe cũ&lt;br&gt;queue chạy → khóa endpoint" style="html=1;whiteSpace=wrap;strokeColor=#2F7D4A;fillColor=#FFFFFF;fontColor=#17324D;fontSize=12;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="630" width="400" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="exceptions" value="&lt;b&gt;PHẢN HỒI PROTOCOL&lt;/b&gt;&lt;br&gt;OK: chấp nhận header, chưa hoàn tất   ·   SUCCESS: đã commit file   ·   DUPLICATE: cần chọn chính sách   ·   SKIPPED: không ghi   ·   REJECTED: server đủ slot   ·   ERROR: validation/I/O" style="html=1;whiteSpace=wrap;strokeColor=#17324D;fillColor=#FFFFFF;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="815" width="1710" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="optional" value="&lt;b&gt;NHÁNH NGOÀI RUNTIME MẶC ĐỊNH&lt;/b&gt;&lt;br&gt;HTTP multipart adapter và mock vẫn tồn tại trong uploader.py nhưng config.example.json dùng TCP. MySQL 8 repository là module tùy chọn, chưa được MainWindow/Server gọi." style="html=1;whiteSpace=wrap;strokeColor=#7555A5;fillColor=#F1ECFA;fontColor=#17324D;fontSize=13;rounded=1;arcSize=14;strokeWidth=2;dashed=1;dashPattern=8 6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="930" width="1710" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="&lt;b&gt;Chú giải&lt;/b&gt;  Hộp trắng/xanh: trạng thái hoặc bước chính   ·   Cam: chờ quyết định/bận   ·   Đỏ: lỗi/từ chối   ·   Tím nét đứt: nhánh tùy chọn/chưa tích hợp" style="html=1;whiteSpace=wrap;strokeColor=#5B6975;fillColor=#FFFFFF;fontColor=#17324D;fontSize=12;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1020" width="1710" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="st1" value="chỉ file hợp lệ" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="invalid" target="waiting">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st2" value="FIFO có slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="waiting" target="uploading">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st3" value="đã gửi đủ payload" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="uploading" target="ack_detail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st4" value="SUCCESS hợp lệ" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="ack_detail" target="completed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st5" value="DUPLICATE" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#C06B20;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="uploading" target="duplicate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st6" value="rename / overwrite" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="duplicate" target="waiting">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st7" value="skip" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="duplicate" target="skipped">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st8" value="SKIPPED" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#5B6975;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="uploading" target="skipped">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st9" value="ERROR / timeout / offline" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="uploading" target="failed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st10" value="người dùng chọn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="failed" target="retry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="st11" value="reset" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="retry" target="waiting">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h1" value="bấm Kiểm tra" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="untested" target="checking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h2" value="HEALTHY" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="checking" target="healthy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h3" value="HEALTHY nhưng đủ 3 slot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4A6478;" edge="1" parent="1" source="checking" target="busy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h4" value="refused / DNS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="checking" target="offline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5" value="không phản hồi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="checking" target="timeout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h6" value="payload sai" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B53A3A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="checking" target="protocol_error">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h7" value="invalidate" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2F7D4A;dashed=1;dashPattern=7 5;" edge="1" parent="1" source="endpoint_change" target="untested">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
