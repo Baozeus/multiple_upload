@@ -25,7 +25,7 @@
 
 <img width="1162" height="522" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/55bf1173-e9b5-4b05-8805-4970a5850723" />
 
-**Lưu ý:** Client Queue và TCP Server đều giới hạn `N = 3` upload thực sự đang chạy. Mỗi lần chọn tối đa 6 tệp; các tệp thứ 4–6 chờ FIFO và tự chạy khi có slot.
+**Lưu ý:** giới hạn `N = 3` hiện được thực thi ở **Client Queue**. Server hiện chấp nhận nhiều connection và tạo một thread cho mỗi connection; Server không có limiter N=3 riêng.
 
 ## 4. Luồng upload
 
@@ -47,7 +47,7 @@
 ## 6. Quy tắc file
 
 - Định dạng: `.txt`, `.pdf`, `.jpg`, `.jpeg`, `.doc`, `.docx`
-- Kích thước tối đa: **500 KiB/file = 512.000 byte**. Checklist gọi ngắn là “500 KB”; source dùng quy ước nhị phân KiB.
+- Kích thước tối đa: 10 GB/file
 - Tên file được kiểm tra để tránh path traversal
 - Trùng tên:
   - `rename`: `file.txt` -> `file(1).txt` -> `file(2).txt`...
@@ -76,7 +76,7 @@ Header:
 {
   "filename": "tailieu.pdf",
   "filesize": 102400,
-  "conflict": "ask"
+  "conflict": "rename"
 }
 ```
 
@@ -161,9 +161,7 @@ Client mặc định dùng:
 - TCP
 - `127.0.0.1:9000`
 - tối đa 3 file upload đồng thời
-- conflict policy `ask`: chỉ hiện dialog **Đổi tên / Ghi đè / Bỏ qua** khi Server xác nhận có trùng tên
-
-Nút **Kiểm tra kết nối** gửi health-check đúng giao thức UDM_10. Việc một cổng TCP mở nhưng trả giao thức khác không được coi là Server UDM hoạt động. Kết quả hiển thị thời điểm kiểm tra và tình trạng còn slot upload.
+- conflict policy `rename`
 
 ## 10. Kiểm thử
 
@@ -188,10 +186,3 @@ python -B -m unittest Code.tests.test_protocol_and_storage -v
 Kiến trúc trong bản cập nhật này được đồng bộ theo **source code hiện tại**: Client là **PySide6 + TCP**, không phải Tkinter + Flask/HTTP. HTTP Adapter vẫn tồn tại trong Client để tương thích cấu hình cũ, nhưng không phải đường chạy mặc định và repository không kèm HTTP Server tương ứng.
 
 MySQL nằm trong module `Code/mysql_database/` và không được khởi động trong demo TCP mặc định.
-
-Kiểm tra package MySQL mà không kết nối database thật:
-
-```powershell
-$env:PYTHONPATH=(Resolve-Path 'Code\mysql_database\src').Path
-python -B -m pytest Code\mysql_database\tests -q
-```
