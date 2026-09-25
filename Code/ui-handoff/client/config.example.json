@@ -6,5 +6,6 @@
   "upload_endpoint": "/api/uploads",
   "allow_mock_fallback": false,
   "max_concurrent": 3,
-  "conflict_policy": "rename"
+  "max_upload_size": 512000,
+  "conflict_policy": "ask"
 }

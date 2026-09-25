@@ -81,7 +81,7 @@ Khi không có `config.json`, Client tự dùng:
 
 Trên giao diện, chọn chính sách **Đổi tên**, **Ghi đè** hoặc **Bỏ qua**, sau đó kéo-thả hoặc chọn nhiều file.
 
-Các định dạng được hỗ trợ: `.txt`, `.pdf`, `.jpg`, `.jpeg`, `.doc`, `.docx`. Dung lượng tối đa là 10 GB cho mỗi file.
+Các định dạng được hỗ trợ: `.txt`, `.pdf`, `.jpg`, `.jpeg`, `.doc`, `.docx`. Dung lượng tối đa là 500 KiB (512.000 byte) cho mỗi file.
 
 ## 5. Cách 2 — Chạy TCP bằng cấu hình riêng
 
@@ -222,7 +222,7 @@ Get-NetTCPConnection -LocalPort 9000 -State Listen
 ### File bị từ chối
 
 - Kiểm tra phần mở rộng thuộc danh sách hỗ trợ.
-- Kiểm tra dung lượng không vượt 10 GB.
+- Kiểm tra dung lượng không vượt 500 KiB (512.000 byte).
 - Kiểm tra tên file hợp lệ và chính sách xử lý file trùng.
 
 ### Dừng chương trình

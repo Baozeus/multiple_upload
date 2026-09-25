@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import partial
 from datetime import datetime
+import math
 import threading
 import time
 
@@ -18,8 +19,13 @@ from PySide6.QtNetwork import (
 
 from .config import ClientConfig
 from .models import UploadItem, UploadStatus
-from .queue_manager import UploadQueue
-from .tcp_transport import TcpUploadAdapter, TcpUploadResult
+from .queue_manager import BATCH_LIMIT_REASON, UploadQueue
+from .tcp_transport import (
+    ProtocolMismatchError,
+    TcpHealthResult,
+    TcpUploadAdapter,
+    TcpUploadResult,
+)
 
 
 class UploadCoordinator(QObject):
@@ -33,15 +39,22 @@ class UploadCoordinator(QObject):
     rejected_files = Signal(object)
     item_terminal = Signal(object, str)
     tcp_progress = Signal(str, int, float)
+    tcp_waiting_for_ack = Signal(str)
     tcp_finished = Signal(str, object)
     tcp_failed = Signal(str, str)
+    connection_state_changed = Signal(object)
+    _connection_check_finished = Signal(int, int, object)
 
     def __init__(self, config: ClientConfig, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.config = config
-        self.queue = UploadQueue(config.max_concurrent)
+        self.queue = UploadQueue(config.max_concurrent, config.max_upload_size)
         self.network = QNetworkAccessManager(self)
-        self.tcp = TcpUploadAdapter(config.tcp_host, config.tcp_port)
+        self._tcp_host = config.tcp_host
+        self._tcp_port = config.tcp_port
+        self._endpoint_revision = 0
+        self._check_token = 0
+        self._connection_check_running = False
         self._network_replies: dict[str, QNetworkReply] = {}
         self._mock_timers: dict[str, QTimer] = {}
         self._progress_samples: dict[str, tuple[float, int]] = {}
@@ -49,21 +62,145 @@ class UploadCoordinator(QObject):
         self.default_conflict_policy = config.conflict_policy
 
         self.tcp_progress.connect(self._on_tcp_progress)
+        self.tcp_waiting_for_ack.connect(self._on_tcp_waiting_for_ack)
         self.tcp_finished.connect(self._on_tcp_finished)
         self.tcp_failed.connect(self._on_tcp_failed)
+        self._connection_check_finished.connect(self._apply_connection_check)
 
         self.mode_changed.emit(config.mode_label)
+
+    @property
+    def tcp_endpoint(self) -> tuple[str, int]:
+        return self._tcp_host, self._tcp_port
+
+    @property
+    def endpoint_locked(self) -> bool:
+        """Keep every waiting/running item in the current batch on one endpoint."""
+        return any(
+            item.status in {UploadStatus.WAITING, UploadStatus.UPLOADING}
+            for item in self.queue.items.values()
+        )
+
+    def update_tcp_endpoint(self, host: str, port: int) -> None:
+        host = host.strip()
+        if not host:
+            raise ValueError("Địa chỉ Server không được để trống.")
+        if not 1 <= port <= 65535:
+            raise ValueError("Port phải nằm trong khoảng 1–65535.")
+        if (host, port) == self.tcp_endpoint:
+            return
+        if self.endpoint_locked:
+            raise ValueError(
+                "Không thể đổi Server khi đang còn tệp chờ hoặc đang tải."
+            )
+        self._tcp_host, self._tcp_port = host, port
+        self.invalidate_connection_status("Cấu hình đã thay đổi — cần kiểm tra lại.")
+
+    def invalidate_connection_status(self, message: str = "Chưa kiểm tra") -> None:
+        self._endpoint_revision += 1
+        self.connection_state_changed.emit({
+            "state": "untested",
+            "message": message,
+            "host": self._tcp_host,
+            "port": self._tcp_port,
+            "busy": self._connection_check_running,
+        })
+
+    def check_connection(self) -> bool:
+        if self._connection_check_running:
+            return False
+        self._connection_check_running = True
+        self._check_token += 1
+        token = self._check_token
+        revision = self._endpoint_revision
+        host, port = self.tcp_endpoint
+        self.connection_state_changed.emit({
+            "state": "checking",
+            "message": "Đang kiểm tra Server UDM…",
+            "host": host,
+            "port": port,
+            "busy": True,
+        })
+        threading.Thread(
+            target=self._run_connection_check,
+            args=(token, revision, host, port),
+            daemon=True,
+        ).start()
+        return True
+
+    def _run_connection_check(
+        self, token: int, revision: int, host: str, port: int
+    ) -> None:
+        checked_at = datetime.now().astimezone().isoformat(timespec="seconds")
+        try:
+            result: TcpHealthResult = TcpUploadAdapter(
+                host, port, timeout=2.5
+            ).check_server()
+            state = "ready" if result.can_accept_upload else "busy"
+            message = (
+                "Server UDM sẵn sàng nhận tệp"
+                if result.can_accept_upload
+                else "Server UDM phản hồi nhưng đã đủ slot upload"
+            )
+            payload = {
+                "state": state,
+                "message": message,
+                "can_accept_upload": result.can_accept_upload,
+                "active_uploads": result.active_uploads,
+                "upload_limit": result.upload_limit,
+            }
+        except TimeoutError as error:
+            payload = {"state": "timeout", "message": str(error)}
+        except ProtocolMismatchError as error:
+            payload = {"state": "protocol_error", "message": str(error)}
+        except (ConnectionError, OSError) as error:
+            payload = {"state": "offline", "message": str(error)}
+        except Exception as error:  # defensive boundary for the worker thread
+            payload = {"state": "offline", "message": str(error)}
+        payload.update({
+            "host": host,
+            "port": port,
+            "checked_at": checked_at,
+            "busy": False,
+        })
+        self._connection_check_finished.emit(token, revision, payload)
+
+    def _apply_connection_check(
+        self, token: int, revision: int, payload: object
+    ) -> None:
+        if token != self._check_token:
+            return
+        self._connection_check_running = False
+        if revision != self._endpoint_revision:
+            self.connection_state_changed.emit({
+                "state": "untested",
+                "message": "Cấu hình đã thay đổi — kết quả cũ đã bị bỏ qua.",
+                "host": self._tcp_host,
+                "port": self._tcp_port,
+                "busy": False,
+            })
+            return
+        self.connection_state_changed.emit(payload)
 
     def add_files(self, paths: list[str]) -> None:
         added = self.queue.add_paths(paths)
         for item in added:
-            item.conflict_policy = self.default_conflict_policy
+            item.conflict_policy = self.default_conflict_policy or "ask"
             self.item_added.emit(item.id)
         if added:
             self.notification.emit(f"Đã thêm {len(added)} tệp vào danh sách.")
         if self.queue.rejected:
             self.rejected_files.emit(list(self.queue.rejected))
-            if not added:
+            overflow_count = sum(
+                reason == BATCH_LIMIT_REASON for _path, reason in self.queue.rejected
+            )
+            if overflow_count:
+                self.notification.emit(
+                    "Mỗi lần chỉ nhận tối đa 6 file. "
+                    f"Đã nhận {len(added)} file; {overflow_count} file còn lại "
+                    "chưa được thêm."
+                )
+            elif not added:
                 self.notification.emit(
                     f"Không thể thêm {len(self.queue.rejected)} tệp. Xem chi tiết lỗi trên hộp thoại."
                 )
@@ -77,7 +214,7 @@ class UploadCoordinator(QObject):
         self._pump_queue()
 
     def set_conflict_policy(self, policy: str) -> None:
-        if policy not in {"rename", "overwrite", "skip"}:
+        if policy not in {"ask", "rename", "overwrite", "skip"}:
             return
         self.default_conflict_policy = policy
         for item in self.queue.items.values():
@@ -121,11 +258,15 @@ class UploadCoordinator(QObject):
         if item is None or not item.conflict_pending:
             return
         if action == "skip":
+            item.status = UploadStatus.SKIPPED
+            item.progress = 0
+            item.speed = "—"
+            item.detail = "Đã bỏ qua vì tên tệp đã tồn tại"
+            item.conflict_pending = False
             item.conflict_result = "Bỏ qua"
             item.finished_at = datetime.now().astimezone()
             self.item_terminal.emit(item, "Bỏ qua")
-            self.queue.remove(item_id)
-            self.item_removed.emit(item_id)
+            self.item_updated.emit(item_id)
             self.notification.emit(f"Đã bỏ qua tệp trùng tên “{item.name}”.")
         elif action in {"overwrite", "rename"}:
             item.reset_for_retry()
@@ -151,24 +292,28 @@ class UploadCoordinator(QObject):
 
     def _start_tcp_upload(self, item: UploadItem) -> None:
         self._tcp_active.add(item.id)
-        item.detail = f"Đang gửi qua TCP đến {self.config.tcp_host}:{self.config.tcp_port}"
+        host, port = self.tcp_endpoint
+        item.detail = f"Đang gửi qua TCP đến {host}:{port}"
         self.item_updated.emit(item.id)
 
         worker = threading.Thread(
             target=self._run_tcp_upload,
-            args=(item.id, item.path, item.conflict_policy or "rename"),
+            args=(item.id, item.path, item.conflict_policy or "ask", host, port),
             daemon=True,
         )
         worker.start()
 
-    def _run_tcp_upload(self, item_id: str, path, conflict: str) -> None:  # noqa: ANN001
+    def _run_tcp_upload(
+        self, item_id: str, path, conflict: str, host: str, port: int
+    ) -> None:  # noqa: ANN001
         try:
-            result = self.tcp.upload(
+            result = TcpUploadAdapter(host, port).upload(
                 path,
                 conflict=conflict,
                 on_progress=lambda percent, speed: self.tcp_progress.emit(
                     item_id, percent, speed
                 ),
+                on_waiting_for_ack=lambda: self.tcp_waiting_for_ack.emit(item_id),
             )
             self.tcp_finished.emit(item_id, result)
         except Exception as error:
@@ -178,8 +323,17 @@ class UploadCoordinator(QObject):
         item = self.get_item(item_id)
         if item is None or item.status is not UploadStatus.UPLOADING:
             return
-        item.progress = max(0, min(99, percent))
+        item.progress = max(item.progress, max(0, min(99, percent)))
         item.speed = self._format_speed(speed)
+        self.item_updated.emit(item_id)
+
+    def _on_tcp_waiting_for_ack(self, item_id: str) -> None:
+        item = self.get_item(item_id)
+        if item is None or item.status is not UploadStatus.UPLOADING:
+            return
+        item.progress = max(item.progress, 99)
+        item.speed = "—"
+        item.detail = "Đang chờ Server xác nhận"
         self.item_updated.emit(item_id)
 
     def _on_tcp_finished(self, item_id: str, result: TcpUploadResult) -> None:
@@ -189,23 +343,33 @@ class UploadCoordinator(QObject):
             self._pump_queue()
             return
 
-        item.status = UploadStatus.COMPLETED
+        if result.status == "DUPLICATE":
+            item.status = UploadStatus.WAITING
+            item.progress = 0
+            item.speed = "—"
+            item.detail = "Tên tệp đã tồn tại trên Server — cần chọn cách xử lý"
+            item.conflict_pending = True
+            self.item_updated.emit(item.id)
+            self.duplicate_found.emit(item.id)
+            self.queue_changed.emit()
+            self._pump_queue()
+            return
+
         item.progress = 100
         item.speed = "—"
         item.finished_at = datetime.now().astimezone()
         if result.status == "SKIPPED":
+            item.status = UploadStatus.SKIPPED
             item.detail = "Đã bỏ qua vì tên tệp đã tồn tại"
             item.conflict_result = "Bỏ qua"
             terminal_status = "Bỏ qua"
         else:
+            item.status = UploadStatus.COMPLETED
             item.saved_name = result.saved_as
             item.detail = f"Server đã lưu thành “{result.saved_as}”"
             terminal_status = UploadStatus.COMPLETED.value
         self.item_updated.emit(item.id)
         self.item_terminal.emit(item, terminal_status)
-        self.mode_changed.emit(
-            f"TCP đang hoạt động — {self.config.tcp_host}:{self.config.tcp_port}"
-        )
         self.queue_changed.emit()
         self._pump_queue()
 
@@ -372,6 +536,8 @@ class UploadCoordinator(QObject):
 
     @staticmethod
     def _format_speed(bytes_per_second: float) -> str:
+        if not math.isfinite(bytes_per_second) or bytes_per_second <= 0:
+            return "0 B/s"
         if bytes_per_second >= 1024 * 1024:
             return f"{bytes_per_second / (1024 * 1024):.1f} MB/s".replace(".", ",")
         if bytes_per_second >= 1024:

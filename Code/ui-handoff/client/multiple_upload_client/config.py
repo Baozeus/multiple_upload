@@ -7,6 +7,8 @@ import json
 import os
 from pathlib import Path
 
+from .limits import MAX_CONCURRENT_UPLOADS, MAX_UPLOAD_SIZE
+
 
 CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.json"
 
@@ -20,6 +22,7 @@ class ClientConfig:
     upload_endpoint: str
     allow_mock_fallback: bool
     max_concurrent: int
+    max_upload_size: int
     conflict_policy: str
 
     @classmethod
@@ -67,15 +70,29 @@ class ClientConfig:
             )
         except ValueError as error:
             raise ValueError("UDM10_MAX_CONCURRENT phải là số nguyên.") from error
-        if not 1 <= max_concurrent <= 6:
-            raise ValueError("UDM10_MAX_CONCURRENT phải nằm trong khoảng 1–6.")
+        if not 1 <= max_concurrent <= MAX_CONCURRENT_UPLOADS:
+            raise ValueError("UDM10_MAX_CONCURRENT phải nằm trong khoảng 1–3.")
+
+        try:
+            max_upload_size = int(
+                os.getenv(
+                    "UDM10_MAX_UPLOAD_SIZE",
+                    str(values.get("max_upload_size", MAX_UPLOAD_SIZE)),
+                )
+            )
+        except ValueError as error:
+            raise ValueError("UDM10_MAX_UPLOAD_SIZE phải là số nguyên.") from error
+        if not 0 <= max_upload_size <= MAX_UPLOAD_SIZE:
+            raise ValueError(
+                "UDM10_MAX_UPLOAD_SIZE phải từ 0 đến 512.000 byte (500 KiB)."
+            )
 
         conflict_policy = os.getenv(
-            "UDM10_CONFLICT_POLICY", str(values.get("conflict_policy", "rename"))
+            "UDM10_CONFLICT_POLICY", str(values.get("conflict_policy", "ask"))
         ).strip().lower()
-        if conflict_policy not in {"rename", "overwrite", "skip"}:
+        if conflict_policy not in {"ask", "rename", "overwrite", "skip"}:
             raise ValueError(
-                "UDM10_CONFLICT_POLICY phải là rename, overwrite hoặc skip."
+                "UDM10_CONFLICT_POLICY phải là ask, rename, overwrite hoặc skip."
             )
         return cls(
             transport=transport,
@@ -85,6 +102,7 @@ class ClientConfig:
             upload_endpoint="/" + endpoint.strip("/"),
             allow_mock_fallback=str(fallback_value).lower() in {"1", "true", "yes", "on"},
             max_concurrent=max_concurrent,
+            max_upload_size=max_upload_size,
             conflict_policy=conflict_policy,
         )
 

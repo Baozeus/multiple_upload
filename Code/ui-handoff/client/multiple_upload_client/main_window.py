@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QSize, Qt, QTimer
-from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtGui import QIntValidator, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QButtonGroup,
     QComboBox,
@@ -141,17 +141,53 @@ class MainWindow(QMainWindow):
             "Tải lên nhiều tệp",
             "Thêm tệp và theo dõi từng tiến trình trong một hàng đợi rõ ràng.",
         )
-        self.connection_badge = ConnectionBadge()
-        header.addWidget(self.connection_badge, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addLayout(header)
+        connection_row = QHBoxLayout()
+        connection_row.addStretch()
+        connection_row.addWidget(self._build_connection_controls())
+        layout.addLayout(connection_row)
 
         self.drop_zone = DropZone()
-        self.drop_zone.files_dropped.connect(self.coordinator.add_files)
+        self.drop_zone.files_dropped.connect(self._add_files)
         self.drop_zone.choose_requested.connect(self._choose_files)
         layout.addWidget(self.drop_zone)
         layout.addWidget(self._build_status_ledger())
         layout.addWidget(self._build_file_panel(), 1)
         return page
+
+    def _build_connection_controls(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("connectionPanel")
+        layout = QHBoxLayout(panel)
+        layout.setContentsMargins(10, 7, 10, 7)
+        layout.setSpacing(7)
+
+        host_label = QLabel("Server")
+        host_label.setObjectName("sectionMeta")
+        self.host_input = QLineEdit(self.coordinator.config.tcp_host)
+        self.host_input.setAccessibleName("Địa chỉ IP hoặc tên Server TCP")
+        self.host_input.setPlaceholderText("127.0.0.1")
+        self.host_input.setFixedWidth(126)
+        self.port_input = QLineEdit(str(self.coordinator.config.tcp_port))
+        self.port_input.setAccessibleName("Port Server TCP")
+        self.port_input.setValidator(QIntValidator(1, 65535, self.port_input))
+        self.port_input.setFixedWidth(70)
+        self.connection_badge = ConnectionBadge()
+        self.check_connection_button = QPushButton("Kiểm tra kết nối")
+        self.check_connection_button.setObjectName("checkConnectionButton")
+        self.check_connection_button.setToolTip(
+            "Gửi health-check đúng giao thức UDM; không tạo tệp hoặc lịch sử upload."
+        )
+        self.check_connection_button.clicked.connect(self._check_connection)
+        self.host_input.textEdited.connect(self._connection_fields_edited)
+        self.port_input.textEdited.connect(self._connection_fields_edited)
+
+        layout.addWidget(host_label)
+        layout.addWidget(self.host_input)
+        layout.addWidget(self.port_input)
+        layout.addWidget(self.connection_badge)
+        layout.addWidget(self.check_connection_button)
+        return panel
 
     def _page_header(self, title_text: str, subtitle_text: str) -> QHBoxLayout:
         layout = QHBoxLayout()
@@ -181,6 +217,7 @@ class MainWindow(QMainWindow):
             ("Đang chờ", UploadStatus.WAITING.value, "waiting"),
             ("Thành công", UploadStatus.COMPLETED.value, "completed"),
             ("Lỗi", UploadStatus.ERROR.value, "error"),
+            ("Bỏ qua", UploadStatus.SKIPPED.value, "skipped"),
         ]
         self.stat_metrics: dict[str, StatMetric] = {}
         for index, (label, key, tone) in enumerate(definitions):
@@ -221,25 +258,11 @@ class MainWindow(QMainWindow):
         self.clear_button.clicked.connect(self._confirm_clear)
         toolbar_layout.addLayout(title_group)
         toolbar_layout.addStretch()
-        conflict_label = QLabel("Khi trùng tên")
-        conflict_label.setObjectName("sectionMeta")
-        self.conflict_select = QComboBox()
-        self.conflict_select.addItem("Đổi tên", "rename")
-        self.conflict_select.addItem("Ghi đè", "overwrite")
-        self.conflict_select.addItem("Bỏ qua", "skip")
-        self.conflict_select.setAccessibleName("Cách xử lý khi tệp trùng tên")
-        configured_policy = self.coordinator.config.conflict_policy
-        configured_index = self.conflict_select.findData(configured_policy)
-        self.conflict_select.setCurrentIndex(max(0, configured_index))
-        self.conflict_select.currentIndexChanged.connect(
-            self._change_conflict_policy
-        )
-        toolbar_layout.addWidget(conflict_label)
-        toolbar_layout.addWidget(self.conflict_select)
         toolbar_layout.addWidget(add_button)
         toolbar_layout.addWidget(self.clear_button)
         panel_layout.addWidget(toolbar)
-        panel_layout.addWidget(UploadTableHeader())
+        self.upload_table_header = UploadTableHeader()
+        panel_layout.addWidget(self.upload_table_header)
 
         self.empty_state = self._empty_state(
             "Chưa có tệp trong hàng đợi",
@@ -331,7 +354,8 @@ class MainWindow(QMainWindow):
         header_layout.addStretch()
         header_layout.addWidget(self.history_meta)
         panel_layout.addWidget(header)
-        panel_layout.addWidget(HistoryTableHeader())
+        self.history_table_header = HistoryTableHeader()
+        panel_layout.addWidget(self.history_table_header)
 
         self.history_empty = self._empty_state(
             "Chưa có lịch sử upload",
@@ -379,7 +403,7 @@ class MainWindow(QMainWindow):
         self.coordinator.item_removed.connect(self._remove_row)
         self.coordinator.queue_changed.connect(self._refresh_summary)
         self.coordinator.duplicate_found.connect(self._show_conflict_dialog)
-        self.coordinator.mode_changed.connect(self._set_connection_mode)
+        self.coordinator.connection_state_changed.connect(self._set_connection_state)
         self.coordinator.notification.connect(self._show_notification)
         self.coordinator.rejected_files.connect(self._show_rejected_files)
         self.coordinator.item_terminal.connect(self._record_history)
@@ -402,20 +426,63 @@ class MainWindow(QMainWindow):
         ]
 
     def _set_initial_connection_mode(self) -> None:
-        self._set_connection_mode(self.coordinator.config.mode_label)
+        host, port = self.coordinator.tcp_endpoint
+        self._set_connection_state({
+            "state": "untested",
+            "message": "Chưa kiểm tra Server",
+            "host": host,
+            "port": port,
+            "busy": False,
+        })
 
     def _set_connection_mode(self, message: str) -> None:
         self._connection_mode_message = message
         if hasattr(self, "connection_badge"):
             self.connection_badge.set_mode(message)
 
-    def _change_conflict_policy(self, _index: int = -1) -> None:
-        policy = self.conflict_select.currentData()
-        if isinstance(policy, str):
-            self.coordinator.set_conflict_policy(policy)
-            self._show_notification(
-                f"Tệp đang chờ sẽ dùng lựa chọn trùng tên: {self.conflict_select.currentText()}."
-            )
+    def _set_connection_state(self, payload: object) -> None:
+        if not isinstance(payload, dict):
+            return
+        state = str(payload.get("state", "untested"))
+        message = str(payload.get("message", "Chưa kiểm tra"))
+        host = str(payload.get("host", ""))
+        port = payload.get("port", "")
+        checked_at = str(payload.get("checked_at", ""))
+        active = payload.get("active_uploads")
+        limit = payload.get("upload_limit")
+        details = [f"{host}:{port}", message]
+        if checked_at:
+            details.append(f"Kiểm tra gần nhất: {checked_at}")
+        if isinstance(active, int) and isinstance(limit, int):
+            details.append(f"Slot đang dùng: {active}/{limit}")
+        checked_suffix = f" · {checked_at[11:19]}" if len(checked_at) >= 19 else ""
+        self.connection_badge.set_state(
+            state, message, "\n".join(details), checked_suffix
+        )
+        self.check_connection_button.setEnabled(not bool(payload.get("busy", False)))
+        self.check_connection_button.setText(
+            "Đang kiểm tra…" if payload.get("busy", False) else "Kiểm tra kết nối"
+        )
+
+    def _connection_fields_edited(self, _text: str = "") -> None:
+        self.coordinator.invalidate_connection_status(
+            "Cấu hình đã thay đổi — cần kiểm tra lại."
+        )
+
+    def _apply_endpoint(self, show_error: bool = False) -> bool:
+        host = self.host_input.text().strip()
+        try:
+            port = int(self.port_input.text())
+            self.coordinator.update_tcp_endpoint(host, port)
+        except (TypeError, ValueError) as error:
+            if show_error:
+                QMessageBox.warning(self, "Cấu hình TCP không hợp lệ", str(error))
+            return False
+        return True
+
+    def _check_connection(self) -> None:
+        if self._apply_endpoint(show_error=True):
+            self.coordinator.check_connection()
 
     def _show_page(self, index: int) -> None:
         self.pages.setCurrentIndex(index)
@@ -436,7 +503,12 @@ class MainWindow(QMainWindow):
             "Tệp hỗ trợ (*.txt *.pdf *.jpg *.jpeg *.doc *.docx)",
         )
         if paths:
-            self.coordinator.add_files(paths)
+            self._add_files(paths)
+
+    def _add_files(self, paths: list[str]) -> None:
+        if not self._apply_endpoint(show_error=True):
+            return
+        self.coordinator.add_files(paths)
 
     def _add_row(self, item_id: str) -> None:
         item = self.coordinator.get_item(item_id)
@@ -445,6 +517,7 @@ class MainWindow(QMainWindow):
         row = FileRow(item)
         row.remove_requested.connect(self.coordinator.remove_item)
         row.action_requested.connect(self._handle_row_action)
+        row.set_compact(getattr(self, "_compact_layout", False))
         self.rows[item_id] = row
         self.list_layout.insertWidget(self.list_layout.count() - 1, row)
 
@@ -488,11 +561,22 @@ class MainWindow(QMainWindow):
         self.footer_summary.setText(
             f"Tổng {total} · Thành công {stats[UploadStatus.COMPLETED.value]} · "
             f"Lỗi {stats[UploadStatus.ERROR.value]} · "
+            f"Bỏ qua {stats[UploadStatus.SKIPPED.value]} · "
             f"Đang chờ {stats[UploadStatus.WAITING.value]}"
         )
         self.empty_state.setVisible(total == 0)
         self.scroll.setVisible(total > 0)
         self.clear_button.setEnabled(total > 0)
+        endpoint_editable = not self.coordinator.endpoint_locked
+        self.host_input.setEnabled(endpoint_editable)
+        self.port_input.setEnabled(endpoint_editable)
+        endpoint_hint = (
+            "Có thể đổi Server khi hàng đợi không còn tệp đang chờ/đang tải."
+            if not endpoint_editable
+            else "Địa chỉ Server áp dụng cho batch upload tiếp theo."
+        )
+        self.host_input.setToolTip(endpoint_hint)
+        self.port_input.setToolTip(endpoint_hint)
 
     def _confirm_clear(self) -> None:
         active_count = self.coordinator.queue.stats()[UploadStatus.UPLOADING.value]
@@ -536,7 +620,10 @@ class MainWindow(QMainWindow):
         skip = QPushButton("Bỏ qua")
         rename = QPushButton("Đổi tên")
         overwrite = QPushButton("Ghi đè")
-        overwrite.setObjectName("primaryButton")
+        rename.setObjectName("primaryButton")
+        rename.setDefault(True)
+        overwrite.setObjectName("dangerButton")
+        overwrite.setToolTip("Thay thế file cũ chỉ sau khi nhận đủ file mới")
         buttons.addWidget(skip)
         buttons.addWidget(rename)
         buttons.addWidget(overwrite)
@@ -582,7 +669,9 @@ class MainWindow(QMainWindow):
                 continue
             filtered.append(record)
         for record in filtered:
-            self.history_layout.insertWidget(self.history_layout.count() - 1, HistoryRow(record))
+            row = HistoryRow(record)
+            row.set_compact(getattr(self, "_compact_layout", False))
+            self.history_layout.insertWidget(self.history_layout.count() - 1, row)
 
         total = len(records)
         visible = len(filtered)
@@ -591,6 +680,24 @@ class MainWindow(QMainWindow):
         )
         self.history_empty.setVisible(visible == 0)
         self.history_scroll.setVisible(visible > 0)
+
+    def resizeEvent(self, event) -> None:  # noqa: ANN001, N802
+        super().resizeEvent(event)
+        compact = self.width() < 1280
+        if compact == getattr(self, "_compact_layout", None):
+            return
+        self._compact_layout = compact
+        if hasattr(self, "upload_table_header"):
+            self.upload_table_header.set_compact(compact)
+        if hasattr(self, "history_table_header"):
+            self.history_table_header.set_compact(compact)
+        for row in self.rows.values():
+            row.set_compact(compact)
+        if hasattr(self, "history_layout"):
+            for index in range(max(0, self.history_layout.count() - 1)):
+                widget = self.history_layout.itemAt(index).widget()
+                if isinstance(widget, HistoryRow):
+                    widget.set_compact(compact)
 
     def _show_notification(self, message: str) -> None:
         self.statusBar().showMessage(message, 4500)

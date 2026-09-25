@@ -7,19 +7,32 @@ from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
+from .limits import (
+    ALLOWED_EXTENSIONS,
+    MAX_CONCURRENT_UPLOADS,
+    MAX_FILES_PER_SELECTION,
+    MAX_UPLOAD_SIZE,
+)
 from .models import UploadItem, UploadStatus
 
 
-MAX_CONCURRENT_UPLOADS = 6
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024
-ALLOWED_EXTENSIONS = frozenset({".txt", ".pdf", ".jpg", ".jpeg", ".doc", ".docx"})
+BATCH_LIMIT_REASON = "Mỗi lần chỉ nhận tối đa 6 file."
 
 
 class UploadQueue:
-    def __init__(self, max_concurrent: int = MAX_CONCURRENT_UPLOADS) -> None:
+    def __init__(
+        self,
+        max_concurrent: int = MAX_CONCURRENT_UPLOADS,
+        max_upload_size: int = MAX_UPLOAD_SIZE,
+    ) -> None:
         if not 1 <= max_concurrent <= MAX_CONCURRENT_UPLOADS:
-            raise ValueError("Giới hạn upload đồng thời phải nằm trong khoảng 1–6.")
+            raise ValueError("Giới hạn upload đồng thời phải nằm trong khoảng 1–3.")
         self.max_concurrent = max_concurrent
+        if not 0 <= max_upload_size <= MAX_UPLOAD_SIZE:
+            raise ValueError(
+                "Giới hạn dung lượng phải từ 0 đến 500 KiB (512.000 byte)."
+            )
+        self.max_upload_size = max_upload_size
         self.items: OrderedDict[str, UploadItem] = OrderedDict()
         self.rejected: list[tuple[Path, str]] = []
 
@@ -28,6 +41,9 @@ class UploadQueue:
         added: list[UploadItem] = []
         for raw_path in paths:
             path = Path(raw_path).resolve()
+            if len(added) >= MAX_FILES_PER_SELECTION:
+                self.rejected.append((path, BATCH_LIMIT_REASON))
+                continue
             if not path.is_file():
                 self.rejected.append((path, "Không tìm thấy tệp hoặc đường dẫn không hợp lệ."))
                 continue
@@ -41,8 +57,8 @@ class UploadQueue:
             except OSError:
                 self.rejected.append((path, "Không thể đọc thông tin tệp."))
                 continue
-            if size > MAX_UPLOAD_SIZE:
-                self.rejected.append((path, "Dung lượng vượt quá giới hạn 10 GB."))
+            if size > self.max_upload_size:
+                self.rejected.append((path, "Dung lượng vượt quá giới hạn cấu hình."))
                 continue
             item = UploadItem(path=path)
             self.items[item.id] = item

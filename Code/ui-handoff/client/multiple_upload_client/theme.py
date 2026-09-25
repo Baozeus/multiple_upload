@@ -98,6 +98,7 @@ QLabel#metricValue[tone="uploading"] { color: #1769E0; }
 QLabel#metricValue[tone="waiting"] { color: #A46200; }
 QLabel#metricValue[tone="completed"] { color: #137A49; }
 QLabel#metricValue[tone="error"] { color: #B3261E; }
+QLabel#metricValue[tone="skipped"] { color: #5F6B7A; }
 QFrame#tablePanel {
     background: #FFFFFF;
     border: 1px solid #DFE4EA;
@@ -143,6 +144,33 @@ QFrame#statusBadge[status="waiting"] { color: #945A00; background: #FFF4DE; }
 QFrame#statusBadge[status="uploading"] { color: #0B62CE; background: #EAF2FE; }
 QFrame#statusBadge[status="completed"] { color: #137A49; background: #E6F4EC; }
 QFrame#statusBadge[status="error"] { color: #B3261E; background: #FDECEA; }
+QFrame#statusBadge[status="skipped"] { color: #5F6B7A; background: #EEF1F4; }
+QFrame#connectionPanel {
+    background: #FFFFFF;
+    border: 1px solid #DFE4EA;
+    border-radius: 10px;
+}
+QFrame#connectionBadge {
+    min-height: 28px;
+    border: none;
+    border-radius: 7px;
+    background: #EEF1F4;
+}
+QFrame#connectionBadge[connectionState="ready"] { background: #E6F4EC; }
+QFrame#connectionBadge[connectionState="busy"] { background: #FFF4DE; }
+QFrame#connectionBadge[connectionState="checking"] { background: #EAF2FE; }
+QFrame#connectionBadge[connectionState="offline"],
+QFrame#connectionBadge[connectionState="timeout"],
+QFrame#connectionBadge[connectionState="protocol_error"] { background: #FDECEA; }
+QLabel#connectionDot { background: #7B8796; border-radius: 4px; }
+QFrame#connectionBadge[connectionState="ready"] QLabel#connectionDot { background: #137A49; }
+QFrame#connectionBadge[connectionState="busy"] QLabel#connectionDot { background: #A46200; }
+QFrame#connectionBadge[connectionState="checking"] QLabel#connectionDot { background: #1769E0; }
+QFrame#connectionBadge[connectionState="offline"] QLabel#connectionDot,
+QFrame#connectionBadge[connectionState="timeout"] QLabel#connectionDot,
+QFrame#connectionBadge[connectionState="protocol_error"] QLabel#connectionDot { background: #B3261E; }
+QLabel#connectionText { font-size: 11px; font-weight: 700; }
+QPushButton#checkConnectionButton { min-width: 132px; }
 QFrame#emptyState { background: #FFFFFF; border: none; }
 QLabel#emptyTitle { color: #273142; font-size: 15px; font-weight: 650; }
 QFrame#infoStrip { background: #F0F5FB; border: none; border-radius: 8px; }

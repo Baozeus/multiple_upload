@@ -14,6 +14,7 @@ class UploadStatus(str, Enum):
     UPLOADING = "Đang tải"
     COMPLETED = "Hoàn tất"
     ERROR = "Lỗi"
+    SKIPPED = "Bỏ qua"
 
 
 @dataclass(slots=True)

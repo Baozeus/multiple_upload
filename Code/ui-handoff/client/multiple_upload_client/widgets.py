@@ -95,6 +95,10 @@ def _draw_line_icon(painter: QPainter, name: str, size: int, color: str) -> None
         painter.drawPath(triangle)
         painter.drawLine(point(12, 8), point(12, 14))
         painter.drawPoint(point(12, 17))
+    elif name == "close":
+        painter.drawEllipse(QRectF(3 * scale, 3 * scale, 18 * scale, 18 * scale))
+        painter.drawLine(point(8, 8), point(16, 16))
+        painter.drawLine(point(16, 8), point(8, 16))
 
 
 def make_icon(name: str, color: str = "#38506A", size: int = 20) -> QIcon:
@@ -233,7 +237,7 @@ class ConnectionBadge(QFrame):
         self.dot = QLabel()
         self.dot.setObjectName("connectionDot")
         self.dot.setFixedSize(8, 8)
-        self.label = QLabel("Đang kiểm tra API")
+        self.label = QLabel("Chưa kiểm tra")
         self.label.setObjectName("connectionText")
         layout.addWidget(self.dot)
         layout.addWidget(self.label)
@@ -259,6 +263,26 @@ class ConnectionBadge(QFrame):
         self.dot.style().unpolish(self.dot)
         self.dot.style().polish(self.dot)
 
+    def set_state(
+        self, state: str, message: str, tooltip: str = "", suffix: str = ""
+    ) -> None:
+        labels = {
+            "untested": "Chưa kiểm tra",
+            "checking": "Đang kiểm tra",
+            "ready": "Server UDM sẵn sàng",
+            "busy": "Server phản hồi · hết slot",
+            "offline": "Không kết nối được",
+            "timeout": "Server không phản hồi",
+            "protocol_error": "Không đúng giao thức UDM",
+        }
+        self.label.setText(labels.get(state, message) + suffix)
+        self.setToolTip(tooltip or message)
+        self.setProperty("connectionState", state)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.dot.style().unpolish(self.dot)
+        self.dot.style().polish(self.dot)
+
 
 class StatusBadge(QFrame):
     _ICON_AND_COLOR = {
@@ -266,6 +290,7 @@ class StatusBadge(QFrame):
         "uploading": ("upload", "#0B62CE"),
         "completed": ("check", "#137A49"),
         "error": ("warning", "#B3261E"),
+        "skipped": ("close", "#5F6B7A"),
     }
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -323,10 +348,13 @@ class DropZone(QFrame):
         copy.setSpacing(3)
         self.title = QLabel("Kéo và thả tệp vào đây")
         self.title.setObjectName("dropTitle")
-        note = QLabel("Hoặc chọn từ máy tính · Tối đa 6 tệp tải lên cùng lúc")
-        note.setObjectName("muted")
+        self.note = QLabel(
+            "Chọn từ máy tính · Tối đa 6 tệp/lần · 3 tệp đồng thời · "
+            "Mỗi tệp ≤ 500 KiB"
+        )
+        self.note.setObjectName("muted")
         copy.addWidget(self.title)
-        copy.addWidget(note)
+        copy.addWidget(self.note)
 
         choose_button = QPushButton("Chọn tệp")
         choose_button.setObjectName("primaryButton")
@@ -412,16 +440,16 @@ class UploadTableHeader(QFrame):
         icon_space = QWidget()
         icon_space.setFixedWidth(34)
         layout.addWidget(icon_space)
-        self._add(layout, "Tên tệp", 210, 3)
-        self._add(layout, "Kích thước", 90)
-        self._add(layout, "Tiến độ", 180, 3)
-        self._add(layout, "Tốc độ", 90)
-        self._add(layout, "Trạng thái", 108)
-        self._add(layout, "Thời gian", 88)
-        self._add(layout, "Thao tác", 84)
+        self.name_column = self._add(layout, "Tên tệp", 210, 3)
+        self.size_column = self._add(layout, "Kích thước", 90)
+        self.progress_column = self._add(layout, "Tiến độ", 180, 3)
+        self.speed_column = self._add(layout, "Tốc độ", 90)
+        self.status_column = self._add(layout, "Trạng thái", 108)
+        self.time_column = self._add(layout, "Thời gian", 88)
+        self.action_column = self._add(layout, "Thao tác", 84)
 
     @staticmethod
-    def _add(layout: QHBoxLayout, text: str, width: int, stretch: int = 0) -> None:
+    def _add(layout: QHBoxLayout, text: str, width: int, stretch: int = 0) -> QLabel:
         label = QLabel(text)
         label.setObjectName("columnLabel")
         if stretch:
@@ -430,6 +458,14 @@ class UploadTableHeader(QFrame):
         else:
             label.setFixedWidth(width)
             layout.addWidget(label)
+        return label
+
+    def set_compact(self, compact: bool) -> None:
+        self.name_column.setMinimumWidth(120 if compact else 210)
+        self.progress_column.setMinimumWidth(120 if compact else 180)
+        self.size_column.setVisible(not compact)
+        self.speed_column.setVisible(not compact)
+        self.time_column.setVisible(not compact)
 
 
 class FileRow(QFrame):
@@ -449,8 +485,8 @@ class FileRow(QFrame):
         outer.setSpacing(12)
         self.file_icon = FileTypeIcon(item.extension)
 
-        identity_widget = QWidget()
-        identity = QVBoxLayout(identity_widget)
+        self.identity_widget = QWidget()
+        identity = QVBoxLayout(self.identity_widget)
         identity.setContentsMargins(0, 0, 0, 0)
         identity.setSpacing(2)
         self.name_label = QLabel()
@@ -466,8 +502,8 @@ class FileRow(QFrame):
         self.size_label.setObjectName("dataCell")
         self.size_label.setFixedWidth(90)
 
-        progress_widget = QWidget()
-        progress_layout = QHBoxLayout(progress_widget)
+        self.progress_widget = QWidget()
+        progress_layout = QHBoxLayout(self.progress_widget)
         progress_layout.setContentsMargins(0, 0, 0, 0)
         progress_layout.setSpacing(9)
         self.progress = QProgressBar()
@@ -497,14 +533,33 @@ class FileRow(QFrame):
         self.action_button.clicked.connect(self._dispatch_action)
 
         outer.addWidget(self.file_icon)
-        outer.addWidget(identity_widget, 3)
+        outer.addWidget(self.identity_widget, 3)
         outer.addWidget(self.size_label)
-        outer.addWidget(progress_widget, 3)
+        outer.addWidget(self.progress_widget, 3)
         outer.addWidget(self.speed_label)
         outer.addWidget(self.status_label)
         outer.addWidget(self.time_label)
         outer.addWidget(self.action_button)
         self.update_item(item)
+
+    def set_compact(self, compact: bool) -> None:
+        horizontal_policy = (
+            QSizePolicy.Policy.Ignored
+            if compact
+            else QSizePolicy.Policy.Expanding
+        )
+        self.setSizePolicy(horizontal_policy, QSizePolicy.Policy.Fixed)
+        self.identity_widget.setSizePolicy(
+            horizontal_policy, QSizePolicy.Policy.Preferred
+        )
+        self.progress_widget.setSizePolicy(
+            horizontal_policy, QSizePolicy.Policy.Preferred
+        )
+        self.name_label.setMinimumWidth(120 if compact else 210)
+        self.progress.setMinimumWidth(90 if compact else 130)
+        self.size_label.setVisible(not compact)
+        self.speed_label.setVisible(not compact)
+        self.time_label.setVisible(not compact)
 
     def _dispatch_action(self) -> None:
         if self.current_action == "remove":
@@ -534,6 +589,7 @@ class FileRow(QFrame):
             UploadStatus.UPLOADING: "uploading",
             UploadStatus.COMPLETED: "completed",
             UploadStatus.ERROR: "error",
+            UploadStatus.SKIPPED: "skipped",
         }[item.status]
         self.status_label.set_status(item.status.value, status_key)
         self.progress.setProperty("progressState", status_key)
@@ -585,12 +641,17 @@ class HistoryTableHeader(QFrame):
         icon_space = QWidget()
         icon_space.setFixedWidth(34)
         layout.addWidget(icon_space)
-        UploadTableHeader._add(layout, "Tên tệp", 240, 4)
-        UploadTableHeader._add(layout, "Kích thước", 100)
-        UploadTableHeader._add(layout, "Thời điểm tải", 150)
-        UploadTableHeader._add(layout, "Trạng thái", 110)
-        UploadTableHeader._add(layout, "Xử lý tên trùng", 130)
-        UploadTableHeader._add(layout, "Nguồn", 130)
+        self.name_column = UploadTableHeader._add(layout, "Tên tệp", 240, 4)
+        self.size_column = UploadTableHeader._add(layout, "Kích thước", 100)
+        self.uploaded_column = UploadTableHeader._add(layout, "Thời điểm tải", 150)
+        self.status_column = UploadTableHeader._add(layout, "Trạng thái", 110)
+        self.conflict_column = UploadTableHeader._add(layout, "Xử lý tên trùng", 130)
+        self.source_column = UploadTableHeader._add(layout, "Nguồn", 130)
+
+    def set_compact(self, compact: bool) -> None:
+        self.name_column.setMinimumWidth(170 if compact else 240)
+        self.conflict_column.setVisible(not compact)
+        self.source_column.setVisible(not compact)
 
 
 class HistoryRow(QFrame):
@@ -626,20 +687,24 @@ class HistoryRow(QFrame):
         status_key = {
             UploadStatus.COMPLETED.value: "completed",
             UploadStatus.ERROR.value: "error",
-            "Bỏ qua": "waiting",
+            "Bỏ qua": "skipped",
         }.get(record.status, "waiting")
         status.set_status(record.status, status_key)
-        conflict = QLabel(record.conflict_result)
-        conflict.setObjectName("dataCell")
-        conflict.setFixedWidth(130)
-        source = QLabel(record.source)
-        source.setObjectName("dataCell")
-        source.setFixedWidth(130)
+        self.conflict_label = QLabel(record.conflict_result)
+        self.conflict_label.setObjectName("dataCell")
+        self.conflict_label.setFixedWidth(130)
+        self.source_label = QLabel(record.source)
+        self.source_label.setObjectName("dataCell")
+        self.source_label.setFixedWidth(130)
 
         layout.addWidget(icon)
         layout.addWidget(identity, 4)
         layout.addWidget(size)
         layout.addWidget(uploaded)
         layout.addWidget(status)
-        layout.addWidget(conflict)
-        layout.addWidget(source)
+        layout.addWidget(self.conflict_label)
+        layout.addWidget(self.source_label)
+
+    def set_compact(self, compact: bool) -> None:
+        self.conflict_label.setVisible(not compact)
+        self.source_label.setVisible(not compact)

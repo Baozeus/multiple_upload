@@ -7,10 +7,15 @@ HEADER_MAX = 64 * 1024
 CHUNK_SIZE = 4096
 DEFAULT_TIMEOUT = 5.0
 DEFAULT_PORT = 9000
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024
+# The checklist calls this limit "500 KB".  The project uses the binary
+# convention consistently: 500 KiB = 500 * 1024 = 512,000 bytes.
+MAX_UPLOAD_SIZE = 500 * 1024
 ALLOWED_EXTENSIONS = frozenset({".txt", ".pdf", ".jpg", ".jpeg", ".doc", ".docx"})
-CONFLICT_POLICIES = frozenset({"rename", "overwrite", "skip"})
+CONFLICT_POLICIES = frozenset({"ask", "rename", "overwrite", "skip"})
 DEFAULT_CONFLICT_POLICY = "rename"
+PROTOCOL_NAME = "UDM_10"
+PROTOCOL_VERSION = 1
+HEALTH_CHECK_TYPE = "health_check"
 
 SAFE_NAME = re.compile(r"^[\w.\- ()\[\]]+$", re.UNICODE)
 
@@ -74,7 +79,7 @@ def validate_upload_header(header):
         allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
         raise ValueError("Dinh dang file khong duoc ho tro. Cho phep: " + allowed)
     if filesize > MAX_UPLOAD_SIZE:
-        raise ValueError("File qua lon (max 10GB)")
+        raise ValueError("File qua lon (toi da 500 KiB / 512000 byte)")
     return filename, filesize
 
 
@@ -82,8 +87,13 @@ def validate_conflict_policy(header):
     """Đọc chính sách trùng tên; Client cũ mặc định dùng ``rename``."""
     policy = str(header.get("conflict", DEFAULT_CONFLICT_POLICY)).strip().lower()
     if policy not in CONFLICT_POLICIES:
-        raise ValueError("conflict phai la rename, overwrite hoac skip")
+        raise ValueError("conflict phai la ask, rename, overwrite hoac skip")
     return policy
+
+
+def is_health_check(header):
+    """Nhận diện probe UDM; probe không phải một tác vụ upload."""
+    return header.get("type") == HEALTH_CHECK_TYPE
 
 
 def format_size(num_bytes):

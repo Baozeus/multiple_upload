@@ -1,5 +1,5 @@
 import os
-from duplicate_handler import commit_file, release_file, reserve_file_path
+from duplicate_handler import abort_reserved_file, commit_file, reserve_file_path
 
 # Thư mục lưu file mặc định
 SAVE_DIR = os.path.join(os.path.dirname(__file__), "uploads")
@@ -18,6 +18,11 @@ def save_incoming_file(
             "bytes_written": 0,
         }
 
+    return save_reserved_file(reservation, data_stream)
+
+
+def save_reserved_file(reservation, data_stream) -> dict:
+    """Ghi vào một đích đã được dành trước khi Server gửi ACK."""
     f = reservation["file"]
     bytes_written = 0
 
@@ -31,7 +36,7 @@ def save_incoming_file(
         if not commit_file(reservation):
             _remove_partial_file(reservation["temporary_path"])
             return {
-                "final_name": filename,
+                "final_name": reservation["final_name"],
                 "completed": False,
                 "skipped": True,
                 "bytes_written": bytes_written,
@@ -43,11 +48,7 @@ def save_incoming_file(
             "bytes_written": bytes_written,
         }
     except Exception:
-        try:
-            f.close()
-        finally:
-            _remove_partial_file(reservation["temporary_path"])
-            release_file(reservation)
+        abort_reserved_file(reservation)
         raise
 
 

@@ -25,7 +25,7 @@ def reserve_file_path(save_dir: str, filename: str, conflict: str = "rename"):
         else:
             final_name = filename
         final_path = os.path.join(save_dir, final_name)
-        if conflict == "skip" and _path_is_taken(final_path):
+        if conflict in {"skip", "ask"} and _path_is_taken(final_path):
             return None
         if final_path in _reserved_paths:
             raise RuntimeError("Tệp này đang được một upload khác xử lý")
@@ -78,6 +78,25 @@ def release_file(reservation):
     final_path = reservation["final_path"]
     with _file_lock:
         _reserved_paths.discard(final_path)
+
+
+def abort_reserved_file(reservation):
+    """Hủy reservation và file tạm, luôn bảo toàn file đích hiện hữu."""
+    if reservation is None:
+        return
+    try:
+        reservation["file"].close()
+    except (KeyError, OSError, ValueError):
+        pass
+    temporary_path = reservation.get("temporary_path")
+    if temporary_path:
+        try:
+            os.remove(temporary_path)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            pass
+    release_file(reservation)
 
 
 def _path_is_taken(path: str) -> bool:

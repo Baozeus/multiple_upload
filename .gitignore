@@ -1,11 +1,26 @@
 # Python virtual environment
 .venv/
+venv/
+.env
+config.json
 
 # Python cache
 __pycache__/
 **/__pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Uploaded files
 uploads/
 **/uploads/
+*.part
+
+# Runtime output
+*.log
+logs/
+build/
+dist/
+upload_history.json
+database/history.json

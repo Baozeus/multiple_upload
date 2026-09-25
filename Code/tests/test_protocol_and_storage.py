@@ -16,15 +16,15 @@ from upload_handler import save_incoming_file
 
 
 class ProtocolValidationTests(unittest.TestCase):
-    def test_accepts_supported_extension_at_exact_10_gb_limit(self) -> None:
+    def test_accepts_supported_extension_at_exact_500_kib_limit(self) -> None:
         name, size = validate_upload_header(
             {"filename": "tai-lieu.pdf", "filesize": MAX_UPLOAD_SIZE}
         )
         self.assertEqual(name, "tai-lieu.pdf")
         self.assertEqual(size, MAX_UPLOAD_SIZE)
 
-    def test_rejects_file_larger_than_10_gb(self) -> None:
-        with self.assertRaisesRegex(ValueError, "max 10GB"):
+    def test_rejects_file_larger_than_500_kib(self) -> None:
+        with self.assertRaisesRegex(ValueError, "500 KiB / 512000 byte"):
             validate_upload_header(
                 {"filename": "tai-lieu.pdf", "filesize": MAX_UPLOAD_SIZE + 1}
             )
@@ -38,7 +38,10 @@ class ProtocolValidationTests(unittest.TestCase):
 
     def test_rejects_unknown_conflict_policy(self) -> None:
         with self.assertRaisesRegex(ValueError, "conflict phai la"):
-            validate_conflict_policy({"conflict": "ask"})
+            validate_conflict_policy({"conflict": "replace"})
+
+    def test_ask_policy_is_supported_for_interactive_conflict(self) -> None:
+        self.assertEqual(validate_conflict_policy({"conflict": "ask"}), "ask")
 
 
 class StorageConflictTests(unittest.TestCase):

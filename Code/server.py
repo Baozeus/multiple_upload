@@ -8,28 +8,40 @@ from protocol import (
     CHUNK_SIZE,
     DEFAULT_PORT,
     DEFAULT_TIMEOUT,
+    PROTOCOL_NAME,
+    PROTOCOL_VERSION,
+    is_health_check,
     recv_exact,
     recv_json,
     send_json,
     validate_conflict_policy,
     validate_upload_header,
 )
-from upload_handler import save_incoming_file
+from duplicate_handler import abort_reserved_file, reserve_file_path
+from upload_handler import save_reserved_file
 
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
 
 class FileUploadServer:
-    def __init__(self, host, port, upload_dir):
+    def __init__(self, host, port, upload_dir, max_concurrent=3):
         self.host = host
         self.port = port
         self.upload_dir = upload_dir
         self.sock = None
         self.running = True
-        self.upload_limit = threading.Semaphore(3)
+        if max_concurrent < 1:
+            raise ValueError("max_concurrent phai >= 1")
+        self.max_concurrent = max_concurrent
+        self.upload_limit = threading.BoundedSemaphore(max_concurrent)
+        self._activity_lock = threading.Lock()
+        self._active_uploads = 0
         if not os.path.exists(self.upload_dir):
             os.makedirs(self.upload_dir)
+
+    def on_chunk_received(self, filename, received, total):
+        """No-op extension point used by deterministic slow/failure test servers."""
 
     def start(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -61,20 +73,8 @@ class FileUploadServer:
     def handle_client(self, conn, addr):
         peer = "{}:{}".format(addr[0], addr[1])
         print("[SERVER] Connected: " + peer)
-        if not self.upload_limit.acquire(blocking=False):
-            print("[SERVER] REJECT {}: Đã đủ 3 file đang upload".format(peer))
-
-            try:
-                send_json(conn, {
-                    "status": "REJECTED",
-                    "message": "Server chỉ nhận tối đa 3 file cùng lúc."
-                })
-            except Exception:
-                pass
-
-            conn.close()
-            return
-    
+        permit_acquired = False
+        reservation = None
         try:
             conn.settimeout(DEFAULT_TIMEOUT)
 
@@ -82,7 +82,19 @@ class FileUploadServer:
                 header = recv_json(conn)
             except Exception as e:
                 send_json(conn, {"status": "ERROR", "message": "Header loi: " + str(e)})
-                self.upload_limit.release()
+                return
+
+            if is_health_check(header):
+                with self._activity_lock:
+                    active_uploads = self._active_uploads
+                send_json(conn, {
+                    "status": "HEALTHY",
+                    "protocol": PROTOCOL_NAME,
+                    "version": PROTOCOL_VERSION,
+                    "can_accept_upload": active_uploads < self.max_concurrent,
+                    "active_uploads": active_uploads,
+                    "upload_limit": self.max_concurrent,
+                })
                 return
 
             try:
@@ -93,19 +105,35 @@ class FileUploadServer:
                 print("[SERVER] Tu choi {}: {}".format(peer, e))
                 return
 
-            
-            if conflict == "skip" and os.path.exists(
-                os.path.join(self.upload_dir, filename)
-            ):
+            if not self.upload_limit.acquire(blocking=False):
                 send_json(conn, {
-                    "status": "SKIPPED",
+                    "status": "REJECTED",
+                    "message": "Server đã đủ {} file đang upload.".format(
+                        self.max_concurrent
+                    ),
+                })
+                return
+            permit_acquired = True
+            with self._activity_lock:
+                self._active_uploads += 1
+
+            reservation = reserve_file_path(
+                self.upload_dir, filename, conflict=conflict
+            )
+            if reservation is None:
+                status = "DUPLICATE" if conflict == "ask" else "SKIPPED"
+                send_json(conn, {
+                    "status": status,
                     "saved_as": filename,
                     "message": "Tệp đã tồn tại trên Server",
                 })
-                print("[SERVER] SKIP {}: {}".format(peer, filename))
+                print("[SERVER] {} {}: {}".format(status, peer, filename))
                 return
 
-            send_json(conn, {"status": "OK", "saved_as": filename})
+            send_json(conn, {
+                "status": "OK",
+                "saved_as": reservation["final_name"],
+            })
             print("[SERVER] Nhan '{}' ({} byte)".format(filename, filesize))
             
             
@@ -116,25 +144,16 @@ class FileUploadServer:
                     chunk = recv_exact(conn, to_read)
                     if chunk:
                         received += len(chunk)
+                        self.on_chunk_received(filename, received, filesize)
                         yield chunk
                     else:
                         break
             
             
             try:
-                result = save_incoming_file(
-                    self.upload_dir, filename, data_stream(), conflict=conflict
-                )
-
-                if result.get("skipped"):
-                    send_json(conn, {
-                        "status": "SKIPPED",
-                        "saved_as": filename,
-                        "message": "Tệp đã tồn tại trên Server",
-                    })
-                    return
-                
-                
+                owned_reservation = reservation
+                reservation = None
+                result = save_reserved_file(owned_reservation, data_stream())
                 send_json(conn, {
                     "status": "SUCCESS",
                     "saved_as": result["final_name"],
@@ -146,7 +165,8 @@ class FileUploadServer:
                 
             except Exception as e:
                 print("[SERVER] ERROR {}: {}".format(peer, e))
-                traceback.print_exc()
+                if not isinstance(e, (ConnectionError, socket.timeout)):
+                    traceback.print_exc()
                 send_json(conn, {"status": "ERROR", "message": str(e)})
 
         except Exception as e:
@@ -158,7 +178,12 @@ class FileUploadServer:
                 pass
 
         finally:
-            self.upload_limit.release()
+            if reservation is not None:
+                abort_reserved_file(reservation)
+            if permit_acquired:
+                with self._activity_lock:
+                    self._active_uploads -= 1
+                self.upload_limit.release()
             try:
                 conn.shutdown(socket.SHUT_RDWR)
             except OSError:
