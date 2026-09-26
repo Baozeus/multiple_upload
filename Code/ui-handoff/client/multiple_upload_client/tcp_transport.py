@@ -211,7 +211,7 @@ class TcpUploadAdapter:
                 "Định dạng không được hỗ trợ (.txt, .pdf, .jpg, .jpeg, .doc, .docx)."
             )
         if path.stat().st_size > MAX_UPLOAD_SIZE:
-            raise ValueError("Dung lượng tệp vượt quá 500 KiB (512.000 byte).")
+            raise ValueError("Dung lượng tệp vượt quá 500 MB (524.288.000 byte).")
 
 
 def _send_json(connection: socket.socket, payload: dict[str, object]) -> None:
