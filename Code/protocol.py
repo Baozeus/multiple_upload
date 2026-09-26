@@ -7,9 +7,9 @@ HEADER_MAX = 64 * 1024
 CHUNK_SIZE = 4096
 DEFAULT_TIMEOUT = 5.0
 DEFAULT_PORT = 9000
-# The checklist calls this limit "500 KB".  The project uses the binary
-# convention consistently: 500 KiB = 500 * 1024 = 512,000 bytes.
-MAX_UPLOAD_SIZE = 500 * 1024
+# Maximum size for one upload. The project uses binary byte units internally.
+# 500 MB for the UI/test requirement = 500 * 1024 * 1024 bytes.
+MAX_UPLOAD_SIZE = 500 * 1024 * 1024
 ALLOWED_EXTENSIONS = frozenset({".txt", ".pdf", ".jpg", ".jpeg", ".doc", ".docx"})
 CONFLICT_POLICIES = frozenset({"ask", "rename", "overwrite", "skip"})
 DEFAULT_CONFLICT_POLICY = "rename"
@@ -79,7 +79,7 @@ def validate_upload_header(header):
         allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
         raise ValueError("Dinh dang file khong duoc ho tro. Cho phep: " + allowed)
     if filesize > MAX_UPLOAD_SIZE:
-        raise ValueError("File qua lon (toi da 500 KiB / 512000 byte)")
+        raise ValueError("File qua lon (toi da 500 MB / 524288000 byte)")
     return filename, filesize
 
 
