@@ -2,6 +2,7 @@
 
 Ứng dụng desktop Python cho phép **kéo-thả/chọn nhiều file và upload lên Server qua TCP**, có hàng đợi FIFO, giới hạn số file upload đồng thời, hiển thị tiến trình/tốc độ riêng cho từng file và xử lý file trùng tên.
 
+link Youtube: https://www.youtube.com/watch?v=1VW4V36qzFs
 ## 1. Thành viên
 
 - Nguyễn Tấn Bão
