@@ -350,7 +350,7 @@ class DropZone(QFrame):
         self.title.setObjectName("dropTitle")
         self.note = QLabel(
             "Chọn từ máy tính · Tối đa 6 tệp/lần · 3 tệp đồng thời · "
-            "Mỗi tệp ≤ 500 KiB"
+            "Mỗi tệp ≤ 500 MB"
         )
         self.note.setObjectName("muted")
         copy.addWidget(self.title)
