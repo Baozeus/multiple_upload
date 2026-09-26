@@ -30,7 +30,7 @@ class UploadQueue:
         self.max_concurrent = max_concurrent
         if not 0 <= max_upload_size <= MAX_UPLOAD_SIZE:
             raise ValueError(
-                "Giới hạn dung lượng phải từ 0 đến 500 KiB (512.000 byte)."
+                "Giới hạn dung lượng phải từ 0 đến 500 MB (524.288.000 byte)."
             )
         self.max_upload_size = max_upload_size
         self.items: OrderedDict[str, UploadItem] = OrderedDict()
