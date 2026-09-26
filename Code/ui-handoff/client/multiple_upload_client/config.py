@@ -84,7 +84,7 @@ class ClientConfig:
             raise ValueError("UDM10_MAX_UPLOAD_SIZE phải là số nguyên.") from error
         if not 0 <= max_upload_size <= MAX_UPLOAD_SIZE:
             raise ValueError(
-                "UDM10_MAX_UPLOAD_SIZE phải từ 0 đến 512.000 byte (500 KiB)."
+                "UDM10_MAX_UPLOAD_SIZE phải từ 0 đến 524.288.000 byte (500 MB)."
             )
 
         conflict_policy = os.getenv(
